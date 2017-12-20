@@ -1,6 +1,9 @@
 
-const randomRange = (min, max) => {
-  return Math.floor(Math.random() * (max + 1 - min)) + min;
+const WASM_ASTAR = {
+  wasmModulePath: 'wasm_astar.wasm',
+  world: null,
+  debug: true,
+  debugRenderIntervalMs: 5000, // Used in debug mode
 };
 
 class Color {
@@ -21,78 +24,18 @@ class Color {
   }
 }
 
-class Transform {
-  constructor(posX, posY, scaleX, scaleY) {
-    this.position = { x: posX, y: posY };
-    this.scale = { x: scaleX, y: scaleY };
-  }
-}
-
-class Rect {
-  constructor(x, y, width, height) {
-    this.transform = new Transform(x, y, width, height);
-    this.color = Color.random();
-  }
-
-  draw(ctx) {
-    const { color, transform: { position, scale } } = this;
-    const { h, s, l, a } = color;
-    ctx.fillStyle = `hsla(${h}, ${s}%, ${l}%, ${a})`;
-    ctx.fillRect(position.x, position.y, scale.x, scale.y);
-  }
-}
-
-class GameEngine {
-  constructor() {
+class CanvasRenderer {
+  constructor(canvasId, width, height) {
     this.bindMethods(this);
-    this.gridWidth = 900;
-    this.gridHeight = 600;
-    this.tileSize = 50;
-    this.tiles = [];
-    this.startTile = null;
-    this.endTile = null;
-    this.wasmModule = null;
-
-    this.loadWasm().then(() => {
-      this.initCanvas();
-      this.generateTiles();
-      this.setUpTargetTiles();
-      this.tick();
-    });
+    this.canvas = document.getElementById(canvasId);
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.ctx = this.canvas.getContext('2d');
   }
 
   bindMethods(t) {
-    const methods = [
-      'tick',
-      'draw',
-      'update',
-      'clearScreen',
-      'loadWasm',
-      'getTileAt',
-      'generateTiles',
-      'setUpTargetTiles',
-      'initCanvas',
-    ];
-    methods.forEach(m => {
-      t[m] = t[m].bind(t);
-    });
-  }
-
-  loadWasm() {
-    const { clearScreen, update, draw } = this;
-    const wasmImports = {
-      js_clear_screen: clearScreen,
-      js_update: update,
-      js_draw: draw,
-    };
-    return fetch('wasm_astar.wasm')
-      .then(response => response.arrayBuffer())
-      .then(bytes => WebAssembly.instantiate(bytes, { env: wasmImports }))
-      .then(results => {
-        const mod = results.instance;
-        this.wasmModule = mod.exports;
-        console.log(mod);
-      });
+    t.clearScreen = t.clearScreen.bind(t);
+    t.drawRect = t.drawRect.bind(t);
   }
 
   clearScreen() {
@@ -100,58 +43,102 @@ class GameEngine {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  initCanvas() {
-    this.canvas = document.getElementById('canvas1');
-    this.canvas.width = this.gridWidth;
-    this.canvas.height = this.gridHeight;
-    this.ctx = this.canvas.getContext('2d');
+  drawRect(px, py, sx, sy, color) {
+    const { ctx } = this;
+    const { h, s, l, a } = color;
+    ctx.fillStyle = `hsla(${h}, ${s}%, ${l}%, ${a})`;
+    ctx.fillRect(px, py, sx, sy);
+  }
+}
+
+class World {
+  constructor() {
+    this.bindMethods(this);
+    const width = 900;
+    const height = 600;
+    this.interval = WASM_ASTAR.debug ? WASM_ASTAR.debugRenderIntervalMs : false;
+    this.wasmModuleTick = () => {};
+    // Could have multiple canvas renderers (background, foreground) and render
+    // at different frequencies
+    this.renderer = new CanvasRenderer('main', width, height);
   }
 
-  generateTiles() {
-    const { tiles, gridWidth, gridHeight, tileSize } = this;
-
-    for (let y = 0; y < gridHeight / tileSize; y++) {
-      for (let x = 0; x < gridWidth / tileSize; x++) {
-        const tile = new Rect(x * tileSize, y * tileSize, tileSize, tileSize);
-        // Every other tile is true and rows are offset by one. This creates a checkerboard
-        const checkerboardTest = (x + y) % 2 === 0;
-        const lightness = checkerboardTest ? 10 : 20;
-        tile.color = new Color(0, 0, lightness);
-        tiles.push(tile);
-      }
-    }
+  bindMethods(t) {
+    t.setWasmModuleTicker = t.setWasmModuleTicker.bind(t);
+    t.clearScreen = t.clearScreen.bind(t);
+    t.update = t.update.bind(t);
+    t.tick = t.tick.bind(t);
+    t.nextTick = t.nextTick.bind(t);
+    t.startTick = t.startTick.bind(t);
+    t.drawTile = t.drawTile.bind(t);
   }
 
-  getTileAt(x, y) {
-    const { tiles, gridWidth, gridHeight, tileSize } = this;
-    const numXTiles = gridWidth / tileSize;
-    return tiles[x * numXTiles + y];
+  setWasmModuleTicker(wasmModuleTicker) {
+    this.wasmModuleTick = wasmModuleTicker;
   }
 
-  setUpTargetTiles() {
-    const { tiles, getTileAt } = this;
-    this.startTile = getTileAt(0, 0);
-    this.endTile = getTileAt(8, 12);
-    this.startTile.color = new Color(220, 100, 60);
-    this.endTile.color = new Color(280, 100, 60);
+  clearScreen() {
+    this.renderer.clearScreen();
   }
 
   update() {
     // for minimal neccessary client updates
   }
 
-  draw() {
-    const { ctx, tiles } = this;
-    for (let i = 0; i < tiles.length; i++) {
-      tiles[i].draw(ctx);
+  tick() {
+    console.log('tick');
+    this.wasmModuleTick();
+    this.nextTick();
+  }
+
+  nextTick() {
+    if (this.interval) return;
+    window.requestAnimationFrame(this.tick);
+  }
+
+  startTick() {
+    this.tick();
+    if (this.interval) {
+      setInterval(() => {
+        this.tick();
+      }, this.interval);
+    } else {
+      this.nextTick();
     }
   }
 
-  tick() {
-    const { wasmModule, tick } = this;
-    this.wasmModule.tick();
-    window.requestAnimationFrame(tick);
+  // TODO: should just export drawRect instead? More generic?
+  // Would need a ctx id map for rust to send to the draw call.
+  drawTile(px, py, size, colorH, colorS, colorL, colorA) {
+    const c = new Color(colorH, colorS, colorL, colorA);
+    this.renderer.drawRect(px, py, size, size, c);
   }
 }
 
-window.addEventListener('load', () => new GameEngine());
+const randomRange = (min, max) => {
+  return Math.floor(Math.random() * (max + 1 - min)) + min;
+};
+
+const loadWasm = (filepath, wasmImports) => {
+  return fetch(filepath)
+    .then(response => response.arrayBuffer())
+    .then(bytes => WebAssembly.instantiate(bytes, { env: wasmImports }))
+    .then(results => {
+      return results.instance.exports;
+    });
+};
+
+const init = () => {
+  WASM_ASTAR.world = new World();
+  const wasmImports = {
+    js_clear_screen: WASM_ASTAR.world.clearScreen,
+    js_update: WASM_ASTAR.world.update,
+    js_draw_tile: WASM_ASTAR.world.drawTile,
+  };
+  return loadWasm(WASM_ASTAR.wasmModulePath, wasmImports).then(wasmModule => {
+    WASM_ASTAR.world.setWasmModuleTicker(wasmModule.tick);
+    WASM_ASTAR.world.startTick();
+  });
+};
+
+window.addEventListener('load', () => init());
