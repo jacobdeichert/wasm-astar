@@ -3,6 +3,7 @@ extern crate lazy_static;
 
 use std::sync::Mutex;
 use std::os::raw::{c_double, c_int};
+use std::collections::HashMap;
 
 mod world;
 mod engine;
@@ -10,15 +11,28 @@ use world::{Tile, WorldState};
 
 lazy_static! {
     static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
+    // Maps to RenderManager.renderers on the client side
+    static ref RENDERER_MAP: HashMap<&'static str, i32> = {
+        [("main", 0)].iter().cloned().collect()
+    };
 }
 
 // imported js functions
 extern "C" {
-    fn js_clear_screen(_: c_int);
+    fn js_clear_screen(renderer_id: c_int);
     fn js_update();
     fn js_request_tick();
-    fn js_start_interval_tick(_: c_int);
-    fn js_draw_tile(_: c_double, _: c_double, _: c_double, _: c_int, _: c_int, _: c_int, _: c_int);
+    fn js_start_interval_tick(ms: c_int);
+    fn js_draw_tile(
+        renderer_id: c_int,
+        px: c_double,
+        py: c_double,
+        size: c_double,
+        ch: c_int,
+        cs: c_int,
+        cl: c_int,
+        ca: c_int,
+    );
 }
 
 #[no_mangle]
@@ -46,7 +60,7 @@ pub extern "C" fn tick() {
 
 pub fn clear_screens() {
     unsafe {
-        js_clear_screen(0);
+        js_clear_screen(*RENDERER_MAP.get(&"main").unwrap());
     }
 }
 
@@ -67,6 +81,7 @@ pub fn draw() {
 fn draw_tile(t: &Tile) {
     unsafe {
         js_draw_tile(
+            *RENDERER_MAP.get(&"main").unwrap(),
             t.transform.pos_x,
             t.transform.pos_y,
             t.transform.scale_x,

@@ -59,9 +59,6 @@ class RenderManager {
     // at different frequencies. Their index is their id which rust/wasm passes
     // down to certain functions.
     this.renderers = [new CanvasRenderer('main', width, height)];
-    this.renderersByName = {
-      main: this.renderers[0],
-    };
   }
 
   bindMethods(t) {
@@ -103,8 +100,8 @@ class RenderManager {
 
   // TODO: should just export drawRect instead? More generic?
   // Would need a ctx id map for rust to send to the draw call.
-  drawTile(px, py, size, ch, cs, cl, ca) {
-    this.renderersByName.main.drawRect(px, py, size, size, ch, cs, cl, ca);
+  drawTile(rendererId, px, py, size, ch, cs, cl, ca) {
+    this.renderers[rendererId].drawRect(px, py, size, size, ch, cs, cl, ca);
   }
 }
 
