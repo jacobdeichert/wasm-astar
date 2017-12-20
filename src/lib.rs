@@ -71,7 +71,7 @@ pub fn update() {
 }
 
 pub fn draw() {
-    let world = &mut WORLD_STATE.lock().unwrap();
+    let world = WORLD_STATE.lock().unwrap();
     for t in world.tiles.iter() {
         draw_tile(&t);
     }
