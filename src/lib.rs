@@ -1,11 +1,16 @@
 #[macro_use]
 extern crate lazy_static;
 
+use std::sync::Mutex;
 use std::os::raw::{c_double, c_int};
 
 mod world;
 mod engine;
-use world::{WORLD_STATE, Tile, get_tile_at, generate_tiles};
+use world::{WorldState};
+
+lazy_static! {
+    static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
+}
 
 // imported js functions
 extern "C" {
@@ -52,16 +57,12 @@ pub fn update() {
 }
 
 pub fn draw() {
-    let grid_width: u32 = 900;
-    let grid_height: u32 = 600;
-    let tile_size: u32 = 50;
-    let tiles: Vec<Tile> = generate_tiles(grid_width, grid_height, tile_size);
-    let start_target = get_tile_at(&tiles, grid_width, tile_size, 0, 0);
-    // TODO: Figure out how to mutate things
-    // start_target.color.h = 220;
-    let end_target = get_tile_at(&tiles, grid_width, tile_size, 8, 12);
+    let world = &mut WORLD_STATE.lock().unwrap();
+    let mut start_target = world.get_tile_at(0, 0);
+    start_target.color.h = 220;
+    let end_target = world.get_tile_at(8, 12);
     unsafe {
-        for t in tiles.iter() {
+        for t in world.tiles.iter() {
             js_draw_tile(
                 t.transform.pos_x,
                 t.transform.pos_y,

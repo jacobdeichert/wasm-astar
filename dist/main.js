@@ -1,5 +1,3 @@
-// @ts-check
-
 const WASM_ASTAR = {
   wasmModulePath: 'wasm_astar.wasm',
   renderManager: null,
@@ -78,7 +76,11 @@ class RenderManager {
   startIntervalTick(ms) {
     console.log(`start interval tick`);
     this.isIntervalTick = true;
-    this.wasmModuleTick();
+    // If I immediately call wasmModuleTick, the rust WORLD_STATE mutex
+    // doesn't get unlocked and throws an error.
+    // So instead, we do an immediate setTimeout so it occurs
+    // on the next stack frame.
+    setTimeout(this.wasmModuleTick, 0);
     setInterval(this.wasmModuleTick, ms);
   }
 

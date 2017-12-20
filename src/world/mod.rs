@@ -1,34 +1,47 @@
-use std::sync::Mutex;
-
-use engine::{Color};
+use engine::{Color, Transform};
 
 mod tile;
 pub use self::tile::Tile;
 
-lazy_static! {
-    pub static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(new_world_state());
-}
-
 pub struct WorldState {
     pub debug: bool,
+    pub width: u32,
+    pub height: u32,
+    pub tile_size: u32,
+    pub tiles: Vec<Tile>,
 }
 
-fn new_world_state() -> WorldState {
-    WorldState {
-        debug: false,
-        // state: GameState::new(Size::new(width, height)),
-        // actions: Actions::default(),
-        // time_controller: TimeController::new(Pcg32Basic::from_seed([42, 42]))
+impl WorldState {
+    pub fn new() -> WorldState {
+        let width: u32 = 900;
+        let height: u32 = 600;
+        let tile_size: u32 = 50;
+
+        WorldState {
+            debug: false,
+            width,
+            height,
+            tile_size,
+            tiles: generate_tiles(width, height, tile_size),
+        }
+    }
+
+    pub fn get_tile_at(&self, x: u32, y: u32) -> Tile {
+        let num_tiles = self.width / self.tile_size;
+        let index = x * num_tiles + y;
+        Tile {
+            transform: Transform {
+                pos_x: 10_f64,
+                pos_y: 10_f64,
+                scale_x: 10_f64,
+                scale_y: 10_f64,
+            },
+            color: Color::default(),
+        }
     }
 }
 
-pub fn get_tile_at(tiles: &Vec<Tile>, grid_width: u32, tile_size: u32, x: u32, y: u32) -> &Tile {
-    let num_tiles = grid_width / tile_size;
-    let index = x * num_tiles + y;
-    &tiles[index as usize]
-}
-
-pub fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile> {
+fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile> {
     let mut vec = Vec::new();
 
     for y in 0..(grid_height / tile_size) {
