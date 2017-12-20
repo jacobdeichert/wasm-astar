@@ -33,6 +33,11 @@ impl Color {
     }
 
     pub fn default() -> Color {
-        Color { h: 0, s: 100, l: 80, a: 1 }
+        Color {
+            h: 0,
+            s: 100,
+            l: 80,
+            a: 1,
+        }
     }
 }

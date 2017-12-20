@@ -6,7 +6,7 @@ use std::os::raw::{c_double, c_int};
 
 mod world;
 mod engine;
-use world::{WorldState, Tile};
+use world::{Tile, WorldState};
 
 lazy_static! {
     static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());

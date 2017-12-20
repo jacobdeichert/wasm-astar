@@ -1,4 +1,4 @@
-use engine::{Transform, Color};
+use engine::{Color, Transform};
 
 pub struct Tile {
     pub transform: Transform,

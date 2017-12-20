@@ -1,4 +1,4 @@
-use engine::{Color};
+use engine::Color;
 
 mod tile;
 pub use self::tile::Tile;
