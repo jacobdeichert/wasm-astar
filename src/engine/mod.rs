@@ -5,6 +5,21 @@ pub struct Transform {
     pub scale_y: f64,
 }
 
+impl Transform {
+    pub fn new(px: f64, py: f64, sx: f64, sy: f64) -> Transform {
+        Transform {
+            pos_x: px,
+            pos_y: py,
+            scale_x: sx,
+            scale_y: sy,
+        }
+    }
+
+    pub fn default() -> Transform {
+        Transform::new(0_f64, 0_f64, 0_f64, 0_f64)
+    }
+}
+
 pub struct Color {
     pub h: u16,
     pub s: u16,
