@@ -1,28 +1,11 @@
+// @ts-check
 
 const WASM_ASTAR = {
   wasmModulePath: 'wasm_astar.wasm',
-  world: null,
+  renderManager: null,
   debug: true,
-  debugRenderIntervalMs: 5000, // Used in debug mode
+  renderIntervalMs: 10000, // Used in debug mode
 };
-
-class Color {
-  constructor(h, s, l, a = 1) {
-    this.h = h;
-    this.s = s;
-    this.l = l;
-    this.a = a;
-  }
-
-  static random() {
-    return new Color(
-      randomRange(0, 360),
-      randomRange(50, 100),
-      randomRange(30, 80),
-      1
-    );
-  }
-}
 
 class CanvasRenderer {
   constructor(canvasId, width, height) {
@@ -43,33 +26,35 @@ class CanvasRenderer {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  drawRect(px, py, sx, sy, color) {
+  drawRect(px, py, sx, sy, ch, cs, cl, ca) {
     const { ctx } = this;
-    const { h, s, l, a } = color;
-    ctx.fillStyle = `hsla(${h}, ${s}%, ${l}%, ${a})`;
+    ctx.fillStyle = `hsla(${ch}, ${cs}%, ${cl}%, ${ca})`;
     ctx.fillRect(px, py, sx, sy);
   }
 }
 
-class World {
+class RenderManager {
   constructor() {
     this.bindMethods(this);
     const width = 900;
     const height = 600;
-    this.interval = WASM_ASTAR.debug ? WASM_ASTAR.debugRenderIntervalMs : false;
+    this.isIntervalTick = false;
     this.wasmModuleTick = () => {};
     // Could have multiple canvas renderers (background, foreground) and render
-    // at different frequencies
-    this.renderer = new CanvasRenderer('main', width, height);
+    // at different frequencies. Their index is their id which rust/wasm passes
+    // down to certain functions.
+    this.renderers = [new CanvasRenderer('main', width, height)];
+    this.renderersByName = {
+      main: this.renderers[0],
+    };
   }
 
   bindMethods(t) {
     t.setWasmModuleTicker = t.setWasmModuleTicker.bind(t);
     t.clearScreen = t.clearScreen.bind(t);
     t.update = t.update.bind(t);
-    t.tick = t.tick.bind(t);
-    t.nextTick = t.nextTick.bind(t);
-    t.startTick = t.startTick.bind(t);
+    t.requestNextTick = t.requestNextTick.bind(t);
+    t.startIntervalTick = t.startIntervalTick.bind(t);
     t.drawTile = t.drawTile.bind(t);
   }
 
@@ -77,47 +62,32 @@ class World {
     this.wasmModuleTick = wasmModuleTicker;
   }
 
-  clearScreen() {
-    this.renderer.clearScreen();
+  clearScreen(rendererId) {
+    this.renderers[rendererId].clearScreen();
   }
 
   update() {
     // for minimal neccessary client updates
   }
 
-  tick() {
-    console.log('tick');
+  requestNextTick() {
+    if (this.isIntervalTick) return;
+    window.requestAnimationFrame(this.wasmModuleTick);
+  }
+
+  startIntervalTick(ms) {
+    console.log(`start interval tick`);
+    this.isIntervalTick = true;
     this.wasmModuleTick();
-    this.nextTick();
-  }
-
-  nextTick() {
-    if (this.interval) return;
-    window.requestAnimationFrame(this.tick);
-  }
-
-  startTick() {
-    this.tick();
-    if (this.interval) {
-      setInterval(() => {
-        this.tick();
-      }, this.interval);
-    } else {
-      this.nextTick();
-    }
+    setInterval(this.wasmModuleTick, ms);
   }
 
   // TODO: should just export drawRect instead? More generic?
   // Would need a ctx id map for rust to send to the draw call.
-  drawTile(px, py, size, colorH, colorS, colorL, colorA) {
-    const c = new Color(colorH, colorS, colorL, colorA);
-    this.renderer.drawRect(px, py, size, size, c);
+  drawTile(px, py, size, ch, cs, cl, ca) {
+    this.renderersByName.main.drawRect(px, py, size, size, ch, cs, cl, ca);
   }
 }
-
-const randomRange = (min, max) => {
-  return Math.floor(Math.random() * (max + 1 - min)) + min;
-};
 
 const loadWasm = (filepath, wasmImports) => {
   return fetch(filepath)
@@ -129,15 +99,18 @@ const loadWasm = (filepath, wasmImports) => {
 };
 
 const init = () => {
-  WASM_ASTAR.world = new World();
+  WASM_ASTAR.renderManager = new RenderManager();
   const wasmImports = {
-    js_clear_screen: WASM_ASTAR.world.clearScreen,
-    js_update: WASM_ASTAR.world.update,
-    js_draw_tile: WASM_ASTAR.world.drawTile,
+    js_request_tick: WASM_ASTAR.renderManager.requestNextTick,
+    js_start_interval_tick: WASM_ASTAR.renderManager.startIntervalTick,
+    js_clear_screen: WASM_ASTAR.renderManager.clearScreen,
+    js_update: WASM_ASTAR.renderManager.update,
+    js_draw_tile: WASM_ASTAR.renderManager.drawTile,
   };
   return loadWasm(WASM_ASTAR.wasmModulePath, wasmImports).then(wasmModule => {
-    WASM_ASTAR.world.setWasmModuleTicker(wasmModule.tick);
-    WASM_ASTAR.world.startTick();
+    WASM_ASTAR.renderManager.setWasmModuleTicker(wasmModule.tick);
+    const debug = WASM_ASTAR.debug ? 1 : 0;
+    wasmModule.init(debug, WASM_ASTAR.renderIntervalMs);
   });
 };
 
