@@ -19,6 +19,7 @@ lazy_static! {
 
 // imported js functions
 extern "C" {
+    fn js_random_range(min: c_int, max: c_int);
     fn js_clear_screen(renderer_id: c_int);
     fn js_update();
     fn js_request_tick();
@@ -65,6 +66,10 @@ pub fn clear_screens() {
 }
 
 pub fn update() {
+    let world = &mut WORLD_STATE.lock().unwrap();
+    for t in world.tiles.iter_mut() {
+        t.update();
+    }
     unsafe {
         js_update();
     }
@@ -76,7 +81,6 @@ pub fn draw() {
         draw_tile(&t);
     }
 }
-
 
 fn draw_tile(t: &Tile) {
     unsafe {

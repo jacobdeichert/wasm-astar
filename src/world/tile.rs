@@ -19,4 +19,10 @@ impl Tile {
             color: Color::default(),
         }
     }
+
+    pub fn update(&mut self) {
+        // unsafe {
+        //     self.transform.pos_x += js_random_range(-10, 10) as f64;
+        // }
+    }
 }

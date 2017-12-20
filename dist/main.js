@@ -12,6 +12,7 @@ const init = () => {
   const renderManager = new RenderManager(width, height);
   WASM_ASTAR.renderManager = renderManager;
   const wasmImports = {
+    js_random_range: randomRange,
     js_request_tick: renderManager.requestNextTick,
     js_start_interval_tick: renderManager.startIntervalTick,
     js_clear_screen: renderManager.clearScreen,
@@ -104,6 +105,10 @@ class RenderManager {
     this.renderers[rendererId].drawRect(px, py, size, size, ch, cs, cl, ca);
   }
 }
+
+const randomRange = (min, max) => {
+  return Math.floor(Math.random() * (max + 1 - min)) + min;
+};
 
 const loadWasm = (filepath, wasmImports) => {
   return fetch(filepath)
