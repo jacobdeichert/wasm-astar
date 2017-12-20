@@ -17,4 +17,16 @@ impl Tile {
             color: Color::default(),
         }
     }
+
+    pub fn default() -> Tile {
+        Tile {
+            transform: Transform {
+                pos_x: 0_f64,
+                pos_y: 0_f64,
+                scale_x: 0_f64,
+                scale_y: 0_f64,
+            },
+            color: Color::default(),
+        }
+    }
 }

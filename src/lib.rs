@@ -6,7 +6,7 @@ use std::os::raw::{c_double, c_int};
 
 mod world;
 mod engine;
-use world::{WorldState};
+use world::{WorldState, Tile};
 
 lazy_static! {
     static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
@@ -58,40 +58,22 @@ pub fn update() {
 
 pub fn draw() {
     let world = &mut WORLD_STATE.lock().unwrap();
-    let mut start_target = world.get_tile_at(0, 0);
-    start_target.color.h = 220;
-    let end_target = world.get_tile_at(8, 12);
+    for t in world.tiles.iter() {
+        draw_tile(&t);
+    }
+}
+
+
+fn draw_tile(t: &Tile) {
     unsafe {
-        for t in world.tiles.iter() {
-            js_draw_tile(
-                t.transform.pos_x,
-                t.transform.pos_y,
-                t.transform.scale_x,
-                t.color.h as i32,
-                t.color.s as i32,
-                t.color.l as i32,
-                t.color.a as i32,
-            );
-        }
-        // draw the start tile
         js_draw_tile(
-            start_target.transform.pos_x,
-            start_target.transform.pos_y,
-            start_target.transform.scale_x,
-            220,
-            start_target.color.s as i32,
-            start_target.color.l as i32,
-            start_target.color.a as i32,
-        );
-        // draw the end tile
-        js_draw_tile(
-            end_target.transform.pos_x,
-            end_target.transform.pos_y,
-            end_target.transform.scale_x,
-            280,
-            end_target.color.s as i32,
-            end_target.color.l as i32,
-            end_target.color.a as i32,
+            t.transform.pos_x,
+            t.transform.pos_y,
+            t.transform.scale_x,
+            t.color.h as i32,
+            t.color.s as i32,
+            t.color.l as i32,
+            t.color.a as i32,
         );
     }
 }

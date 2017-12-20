@@ -1,4 +1,4 @@
-use engine::{Color, Transform};
+use engine::{Color};
 
 mod tile;
 pub use self::tile::Tile;
@@ -8,6 +8,8 @@ pub struct WorldState {
     pub width: u32,
     pub height: u32,
     pub tile_size: u32,
+    pub start_target_id: usize,
+    pub end_target_id: usize,
     pub tiles: Vec<Tile>,
 }
 
@@ -16,28 +18,52 @@ impl WorldState {
         let width: u32 = 900;
         let height: u32 = 600;
         let tile_size: u32 = 50;
+        let tiles = generate_tiles(width, height, tile_size);
 
-        WorldState {
+        let mut w = WorldState {
             debug: false,
             width,
             height,
             tile_size,
-            tiles: generate_tiles(width, height, tile_size),
-        }
+            tiles,
+            start_target_id: 0,
+            end_target_id: 0,
+        };
+        w.set_target_tiles();
+        w
     }
 
-    pub fn get_tile_at(&self, x: u32, y: u32) -> Tile {
+    pub fn get_tile_at(&mut self, x: u32, y: u32) -> &mut Tile {
         let num_tiles = self.width / self.tile_size;
         let index = x * num_tiles + y;
-        Tile {
-            transform: Transform {
-                pos_x: 10_f64,
-                pos_y: 10_f64,
-                scale_x: 10_f64,
-                scale_y: 10_f64,
-            },
-            color: Color::default(),
+        &mut self.tiles[index as usize]
+    }
+
+    fn get_tile_id_at(&self, x: u32, y: u32) -> usize {
+        let num_tiles = self.width / self.tile_size;
+        let index = x * num_tiles + y;
+        index as usize
+    }
+
+    fn get_start_target(&mut self) -> &mut Tile {
+        &mut self.tiles[self.start_target_id]
+    }
+
+    fn get_end_target(&mut self) -> &mut Tile {
+        &mut self.tiles[self.end_target_id]
+    }
+
+    fn set_target_tiles(&mut self) {
+        self.start_target_id = self.get_tile_id_at(0, 0);
+        self.end_target_id = self.get_tile_id_at(8, 12);
+        // Requires block curlies so lifetimes of mutable borrows can die instead of conflict
+        // QUESTION: is there a better way to do it?
+        {
+            let start_target = self.get_start_target();
+            start_target.color.h = 220;
         }
+        let end_target = self.get_end_target();
+        end_target.color.h = 280;
     }
 }
 
