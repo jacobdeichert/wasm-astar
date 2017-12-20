@@ -1,0 +1,10 @@
+[package]
+name = "wasm-astar"
+version = "0.1.0"
+authors = ["Jake Deichert <git@jakedeichert.com>"]
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]

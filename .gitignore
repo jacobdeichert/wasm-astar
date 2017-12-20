@@ -1,0 +1,21 @@
+#######################################
+# system
+#######################################
+*.DS_Store
+*.DS_Store?
+*._*
+*.Spotlight-V100
+*.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+#######################################
+# rust/cargo
+#######################################
+/target/
+**/*.rs.bk
+Cargo.lock
