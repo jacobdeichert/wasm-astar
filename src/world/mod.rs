@@ -40,14 +40,14 @@ impl WorldState {
 
     fn get_tile_id_at(&self, x: u32, y: u32) -> usize {
         let num_tiles = self.width / self.tile_size;
-        let index = x * num_tiles + y;
+        let index = y * num_tiles + x;
         index as usize
     }
 
     fn set_target_tiles(&mut self) {
         self.start_target = self.get_tile_at(0, 0).clone();
         self.start_target.color.h = 220;
-        self.end_target = self.get_tile_at(8, 12).clone();
+        self.end_target = self.get_tile_at(12, 8).clone();
         self.end_target.color.h = 280;
         // Another way I could have done it.
         // self.start_target.transform = Transform::from(&self.get_tile_at(0, 0).transform);
