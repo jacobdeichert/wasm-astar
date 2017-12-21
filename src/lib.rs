@@ -22,6 +22,7 @@ lazy_static! {
 extern "C" {
     fn js_random_range(min: c_int, max: c_int);
     fn js_clear_screen(renderer_id: c_int);
+    fn js_set_canvas_size(width: c_int, height: c_int);
     fn js_update();
     fn js_request_tick();
     fn js_start_interval_tick(ms: c_int);
@@ -85,6 +86,10 @@ fn update() {
 }
 
 fn initial_draw() {
+    unsafe {
+        let world = &mut WORLD_STATE.lock().unwrap();
+        js_set_canvas_size(world.width as i32, world.height as i32);
+    }
     draw_background();
 }
 
