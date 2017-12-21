@@ -5,30 +5,30 @@ use std::sync::Mutex;
 use std::os::raw::{c_double, c_int};
 use std::collections::HashMap;
 
-mod world;
 mod engine;
+mod browser;
 mod utils;
+mod world;
 use world::{Tile, WorldState};
+use engine::EngineState;
 
 lazy_static! {
     static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
+    static ref ENGINE_STATE: Mutex<EngineState> = Mutex::new(EngineState::new());
     // Maps to RenderManager.renderers on the client side
     static ref RENDERER_MAP: HashMap<&'static str, i32> = {
         [("tile_bg", 0), ("main", 1), ("fps", 2)].iter().cloned().collect()
     };
 }
 
-// All imported js functions
-// NOTE: some are used in other modules.
+fn get_layer(layer: &str) -> i32 {
+    *RENDERER_MAP.get(layer).unwrap()
+}
+
+// Imported js functions. Note, some are used in other modules (browser, utils).
 extern "C" {
-    // Used inside utils mod
-    // fn js_random_range(min: c_int, max: c_int);
-    fn js_clear_screen(renderer_id: c_int);
-    fn js_set_screen_size(width: c_int, height: c_int, quality: c_int);
-    fn js_set_renderer_size(renderer_id: c_int, width: c_int, height: c_int, quality: c_int);
     fn js_update();
-    fn js_request_tick();
-    fn js_start_interval_tick(ms: c_int);
+    fn js_draw_fps(renderer_id: c_int, fps: c_double);
     fn js_draw_tile(
         renderer_id: c_int,
         px: c_double,
@@ -51,73 +51,52 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
     {
         let world = &mut WORLD_STATE.lock().unwrap();
         world.debug = if debug == 1 { true } else { false };
-        unsafe {
-            if world.debug {
-                js_start_interval_tick(render_interval_ms);
-            } else {
-                js_request_tick();
-            }
+        if world.debug {
+            browser::start_interval_tick(render_interval_ms);
+        } else {
+            browser::request_next_tick();
         }
     }
     initial_draw();
 }
 
 #[no_mangle]
-pub extern "C" fn tick() {
-    clear_screen("main");
-    update();
-    draw();
-    unsafe {
-        js_request_tick();
-    }
+pub extern "C" fn tick(elapsed_time: f64) {
+    browser::clear_screen(get_layer("main"));
+    update(elapsed_time);
+    draw(elapsed_time);
+    browser::request_next_tick();
 }
 
-fn clear_screen(renderer: &str) {
-    unsafe {
-        js_clear_screen(*RENDERER_MAP.get(renderer).unwrap());
-    }
-}
-
-fn set_renderer_size(renderer: &str, width: u32, height: u32, quality: u32) {
-    unsafe {
-        js_set_renderer_size(
-            *RENDERER_MAP.get(renderer).unwrap(),
-            width as i32,
-            height as i32,
-            quality as i32,
-        );
-    }
-}
-
-fn update() {
-    // let world = &mut WORLD_STATE.lock().unwrap();
-    // for t in world.tiles.iter_mut() {
-    //     t.update();
-    // }
+fn update(elapsed_time: f64) {
+    let engine = &mut ENGINE_STATE.lock().unwrap();
+    engine.update(elapsed_time);
     unsafe {
         js_update();
     }
 }
 
 fn initial_draw() {
-    unsafe {
+    {
         let world = &mut WORLD_STATE.lock().unwrap();
-        js_set_screen_size(
-            world.width as i32,
-            world.height as i32,
-            world.quality as i32,
+        browser::set_screen_size(world.width, world.height, world.quality);
+        browser::set_layer_size(
+            get_layer("tile_bg"),
+            world.width,
+            world.height,
+            world.quality,
         );
-        set_renderer_size("tile_bg", world.width, world.height, world.quality);
-        set_renderer_size("main", world.width, world.height, world.quality);
-        set_renderer_size("fps", 200, 70, world.quality);
+        browser::set_layer_size(get_layer("main"), world.width, world.height, world.quality);
+        browser::set_layer_size(get_layer("fps"), 200, 70, world.quality);
     }
     draw_background();
 }
 
-fn draw() {
+fn draw(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
     draw_tile("main", &world.start_target);
     draw_tile("main", &world.end_target);
+    draw_fps(elapsed_time);
     world.calc_path();
     for t in world.path.iter() {
         draw_tile("main", &t);
@@ -134,7 +113,7 @@ fn draw_background() {
 fn draw_tile(renderer: &str, t: &Tile) {
     unsafe {
         js_draw_tile(
-            *RENDERER_MAP.get(renderer).unwrap(),
+            get_layer(renderer),
             t.transform.pos_x,
             t.transform.pos_y,
             t.transform.scale_x,
@@ -144,4 +123,16 @@ fn draw_tile(renderer: &str, t: &Tile) {
             t.color.a as i32,
         );
     }
+}
+
+
+fn draw_fps(elapsed_time: f64) {
+    let engine = &mut ENGINE_STATE.lock().unwrap();
+    let fps = engine.fps;
+    engine.render_fps(elapsed_time, 150, || {
+        browser::clear_screen(get_layer("fps"));
+        unsafe {
+            js_draw_fps(get_layer("fps"), fps);
+        }
+    });
 }

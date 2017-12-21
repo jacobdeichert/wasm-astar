@@ -1,3 +1,37 @@
+pub struct EngineState {
+    pub last_timestamp: f64,
+    pub last_fps_render_timestamp: f64,
+    pub fps: f64,
+}
+
+impl EngineState {
+    pub fn new() -> EngineState {
+        EngineState {
+            last_timestamp: 0_f64,
+            last_fps_render_timestamp: 0_f64,
+            fps: 0_f64,
+        }
+    }
+
+    pub fn update(&mut self, elapsed_time: f64) {
+        if self.last_timestamp != 0_f64 {
+            let delta: f64 = (elapsed_time - self.last_timestamp) / 1000_f64;
+            self.fps = 1_f64 / delta;
+        }
+        self.last_timestamp = elapsed_time;
+    }
+
+    pub fn render_fps<F>(&mut self, elapsed_time: f64, render_delay_ms: i32, render_cb: F)
+    where
+        F: FnOnce(),
+    {
+        if self.last_fps_render_timestamp + (render_delay_ms as f64) < elapsed_time {
+            self.last_fps_render_timestamp = elapsed_time;
+            render_cb();
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Transform {
     pub pos_x: f64,

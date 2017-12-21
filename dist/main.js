@@ -2,7 +2,7 @@ const WASM_ASTAR = {
   wasmModule: null,
   wasmModulePath: 'wasm_astar.wasm',
   debug: true, // Wasm converts to an int
-  renderIntervalMs: 10000, // Used in debug mode
+  renderIntervalMs: 1000, // Used in debug mode
 
   // Can have multiple canvas layers (background, foreground) and render
   // at different frequencies. Their index is their id which rust/wasm passes
@@ -25,23 +25,18 @@ const init = () => {
 
 const getWasmImports = () => {
   let isIntervalTick = false;
-  let lastUpdateTime = 0;
-  let lastFpsRenderTime = 0;
-  let fps = 0;
 
+  // NOTE: i've prepended `js_` to each function name so it's very explicit
+  // and easy to find where this interop layer is used on the rust side.
   return {
+    // ========================================================================
+    // SET UP ENGINE CALLS
+    // ========================================================================
     js_random_range(min, max) {
       return Math.floor(Math.random() * (max + 1 - min)) + min;
     },
 
     js_request_tick() {
-      const renderDelayMs = 150;
-      if (lastFpsRenderTime + renderDelayMs < lastUpdateTime) {
-        lastFpsRenderTime = performance.now();
-        WASM_ASTAR.layers[2].clearScreen();
-        WASM_ASTAR.layers[2].drawText(`fps: ${Math.round(fps)}`, 40, 5, 45);
-      }
-
       if (isIntervalTick) return;
       window.requestAnimationFrame(WASM_ASTAR.wasmModule.tick);
     },
@@ -50,11 +45,14 @@ const getWasmImports = () => {
       console.log(`start interval tick`);
       isIntervalTick = true;
       // If I immediately call wasmModule.tick, the rust WORLD_STATE mutex
-      // doesn't get unlocked and throws an error.
-      // So instead, we do an immediate setTimeout so it occurs
-      // on the next stack frame.
-      setTimeout(WASM_ASTAR.wasmModule.tick, 0);
-      setInterval(WASM_ASTAR.wasmModule.tick, ms);
+      // doesn't get unlocked and throws an error. So instead, we do an
+      // immediate setTimeout so it occurs on the next stack frame.
+      setTimeout(() => {
+        return WASM_ASTAR.wasmModule.tick(performance.now());
+      }, 0);
+      setInterval(() => {
+        return WASM_ASTAR.wasmModule.tick(performance.now());
+      }, ms);
     },
 
     js_set_screen_size(width, height, quality) {
@@ -63,7 +61,7 @@ const getWasmImports = () => {
       wrapper.style.height = `${height / quality}px`;
     },
 
-    js_set_renderer_size(layerId, width, height, quality) {
+    js_set_layer_size(layerId, width, height, quality) {
       WASM_ASTAR.layers[layerId].setSize(width, height, quality);
     },
 
@@ -71,20 +69,20 @@ const getWasmImports = () => {
       WASM_ASTAR.layers[layerId].clearScreen();
     },
 
-    // for minimal neccessary client updates
+    // ========================================================================
+    // SET UP DRAW CALLS
+    // ========================================================================
+
     js_update() {
-      if (lastUpdateTime) {
-        const delta = (performance.now() - lastUpdateTime) / 1000;
-        fps = 1 / delta;
-      }
-      lastUpdateTime = performance.now();
+      // for minimal neccessary client updates
     },
 
-    // ========================================================================
-    // DRAW CALLS
-    // ========================================================================
     js_draw_tile(layerId, px, py, size, ch, cs, cl, ca) {
       WASM_ASTAR.layers[layerId].drawRect(px, py, size, size, ch, cs, cl, ca);
+    },
+
+    js_draw_fps(layerId, fps) {
+      WASM_ASTAR.layers[layerId].drawText(`fps: ${Math.round(fps)}`, 40, 5, 45);
     },
   };
 };
