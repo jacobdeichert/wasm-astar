@@ -36,6 +36,12 @@ const getWasmImports = () => {
       return Math.floor(Math.random() * (max + 1 - min)) + min;
     },
 
+    js_log(msgId) {
+      // This is a horrible way to debug.
+      // TODO: pass strings from wasm and decode them properly
+      console.log(`WASM LOG: ${msgId}`);
+    },
+
     js_request_tick() {
       if (isIntervalTick) return;
       window.requestAnimationFrame(WASM_ASTAR.wasmModule.tick);
