@@ -8,8 +8,8 @@ pub struct WorldState {
     pub width: u32,
     pub height: u32,
     pub tile_size: u32,
-    pub start_target_id: usize,
-    pub end_target_id: usize,
+    pub start_target: Tile,
+    pub end_target: Tile,
     pub tiles: Vec<Tile>,
 }
 
@@ -26,17 +26,16 @@ impl WorldState {
             height,
             tile_size,
             tiles,
-            start_target_id: 0,
-            end_target_id: 0,
+            start_target: Tile::default(),
+            end_target: Tile::default(),
         };
         w.set_target_tiles();
         w
     }
 
     pub fn get_tile_at(&mut self, x: u32, y: u32) -> &mut Tile {
-        let num_tiles = self.width / self.tile_size;
-        let index = x * num_tiles + y;
-        &mut self.tiles[index as usize]
+        let index = self.get_tile_id_at(x, y);
+        &mut self.tiles[index]
     }
 
     fn get_tile_id_at(&self, x: u32, y: u32) -> usize {
@@ -45,25 +44,14 @@ impl WorldState {
         index as usize
     }
 
-    fn get_start_target(&mut self) -> &mut Tile {
-        &mut self.tiles[self.start_target_id]
-    }
-
-    fn get_end_target(&mut self) -> &mut Tile {
-        &mut self.tiles[self.end_target_id]
-    }
-
     fn set_target_tiles(&mut self) {
-        self.start_target_id = self.get_tile_id_at(0, 0);
-        self.end_target_id = self.get_tile_id_at(8, 12);
-        // Requires block curlies so lifetimes of mutable borrows can die instead of conflict
-        // QUESTION: is there a better way to do it?
-        {
-            let start_target = self.get_start_target();
-            start_target.color.h = 220;
-        }
-        let end_target = self.get_end_target();
-        end_target.color.h = 280;
+        self.start_target = self.get_tile_at(0, 0).clone();
+        self.start_target.color.h = 220;
+        self.end_target = self.get_tile_at(8, 12).clone();
+        self.end_target.color.h = 280;
+        // Another way I could have done it.
+        // self.start_target.transform = Transform::from(&self.get_tile_at(0, 0).transform);
+        // self.end_target.transform = Transform::from(&self.get_tile_at(8, 12).transform);
     }
 }
 

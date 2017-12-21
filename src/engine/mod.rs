@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct Transform {
     pub pos_x: f64,
     pub pos_y: f64,
@@ -15,11 +16,16 @@ impl Transform {
         }
     }
 
+    // pub fn from(t: &Transform) -> Transform {
+    //     Transform::new(t.pos_x, t.pos_y, t.scale_x, t.scale_x)
+    // }
+
     pub fn default() -> Transform {
         Transform::new(0_f64, 0_f64, 0_f64, 0_f64)
     }
 }
 
+#[derive(Clone)]
 pub struct Color {
     pub h: u16,
     pub s: u16,

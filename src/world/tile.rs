@@ -1,5 +1,6 @@
 use engine::{Color, Transform};
 
+#[derive(Clone)]
 pub struct Tile {
     pub transform: Transform,
     pub color: Color,
@@ -20,9 +21,9 @@ impl Tile {
         }
     }
 
-    pub fn update(&mut self) {
-        // unsafe {
-        //     self.transform.pos_x += js_random_range(-10, 10) as f64;
-        // }
-    }
+    // pub fn update(&mut self) {
+    // unsafe {
+    //     self.transform.pos_x += js_random_range(-10, 10) as f64;
+    // }
+    // }
 }

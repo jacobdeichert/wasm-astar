@@ -9,8 +9,13 @@ body {
   background: black;
 }
 
-canvas {
-  background: white;
-  display: block;
+#world {
+  display: flex;
+  justify-content: center;
   margin: 50px auto;
+}
+
+#world canvas {
+  display: block;
+  position: absolute;
 }

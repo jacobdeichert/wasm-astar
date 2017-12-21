@@ -13,7 +13,7 @@ lazy_static! {
     static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
     // Maps to RenderManager.renderers on the client side
     static ref RENDERER_MAP: HashMap<&'static str, i32> = {
-        [("main", 0)].iter().cloned().collect()
+        [("tile_bg", 0), ("main", 1)].iter().cloned().collect()
     };
 }
 
@@ -39,20 +39,28 @@ extern "C" {
 
 #[no_mangle]
 pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
-    let world = &mut WORLD_STATE.lock().unwrap();
-    world.debug = if debug == 1 { true } else { false };
-    unsafe {
-        if world.debug {
-            js_start_interval_tick(render_interval_ms);
-            return;
-        };
-        js_request_tick();
+    // Requires block curlies so lifetime of world ends which causes unlock
+    // and allows draw_background() to gain control of the lock.
+    // Otherwise, this generic client error occurs:
+    //      "RuntimeError: unreachable executed"
+    // QUESTION: is there a better way to do this?
+    {
+        let world = &mut WORLD_STATE.lock().unwrap();
+        world.debug = if debug == 1 { true } else { false };
+        unsafe {
+            if world.debug {
+                js_start_interval_tick(render_interval_ms);
+            } else {
+                js_request_tick();
+            }
+        }
     }
+    initial_draw();
 }
 
 #[no_mangle]
 pub extern "C" fn tick() {
-    clear_screens();
+    clear_screen("main");
     update();
     draw();
     unsafe {
@@ -60,33 +68,43 @@ pub extern "C" fn tick() {
     }
 }
 
-pub fn clear_screens() {
+fn clear_screen(renderer: &str) {
     unsafe {
-        js_clear_screen(*RENDERER_MAP.get(&"main").unwrap());
+        js_clear_screen(*RENDERER_MAP.get(renderer).unwrap());
     }
 }
 
-pub fn update() {
-    let world = &mut WORLD_STATE.lock().unwrap();
-    for t in world.tiles.iter_mut() {
-        t.update();
-    }
+fn update() {
+    // let world = &mut WORLD_STATE.lock().unwrap();
+    // for t in world.tiles.iter_mut() {
+    //     t.update();
+    // }
     unsafe {
         js_update();
     }
 }
 
-pub fn draw() {
+fn initial_draw() {
+    draw_background();
+}
+
+fn draw() {
+    let world = &mut WORLD_STATE.lock().unwrap();
+    draw_tile("main", &world.start_target);
+    draw_tile("main", &world.end_target);
+}
+
+fn draw_background() {
     let world = WORLD_STATE.lock().unwrap();
     for t in world.tiles.iter() {
-        draw_tile(&t);
+        draw_tile("tile_bg", &t);
     }
 }
 
-fn draw_tile(t: &Tile) {
+fn draw_tile(renderer: &str, t: &Tile) {
     unsafe {
         js_draw_tile(
-            *RENDERER_MAP.get(&"main").unwrap(),
+            *RENDERER_MAP.get(renderer).unwrap(),
             t.transform.pos_x,
             t.transform.pos_y,
             t.transform.scale_x,
