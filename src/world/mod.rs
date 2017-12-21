@@ -7,6 +7,7 @@ pub struct WorldState {
     pub debug: bool,
     pub width: u32,
     pub height: u32,
+    pub quality: u32,
     pub tile_size: u32,
     pub start_target: Tile,
     pub end_target: Tile,
@@ -16,8 +17,9 @@ pub struct WorldState {
 
 impl WorldState {
     pub fn new() -> WorldState {
-        let width: u32 = 900;
-        let height: u32 = 600;
+        let quality = 2; // Make the canvas quality better
+        let width: u32 = 900 * quality;
+        let height: u32 = 600 * quality;
         let tile_size: u32 = 50;
         let tiles = generate_tiles(width, height, tile_size);
 
@@ -25,6 +27,7 @@ impl WorldState {
             debug: false,
             width,
             height,
+            quality,
             tile_size,
             tiles,
             path: Vec::new(),

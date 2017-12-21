@@ -13,7 +13,7 @@ lazy_static! {
     static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
     // Maps to RenderManager.renderers on the client side
     static ref RENDERER_MAP: HashMap<&'static str, i32> = {
-        [("tile_bg", 0), ("main", 1)].iter().cloned().collect()
+        [("tile_bg", 0), ("main", 1), ("fps", 2)].iter().cloned().collect()
     };
 }
 
@@ -22,7 +22,8 @@ lazy_static! {
 extern "C" {
     fn js_random_range(min: c_int, max: c_int);
     fn js_clear_screen(renderer_id: c_int);
-    fn js_set_canvas_size(width: c_int, height: c_int);
+    fn js_set_screen_size(width: c_int, height: c_int, quality: c_int);
+    fn js_set_renderer_size(renderer_id: c_int, width: c_int, height: c_int, quality: c_int);
     fn js_update();
     fn js_request_tick();
     fn js_start_interval_tick(ms: c_int);
@@ -75,6 +76,17 @@ fn clear_screen(renderer: &str) {
     }
 }
 
+fn set_renderer_size(renderer: &str, width: u32, height: u32, quality: u32) {
+    unsafe {
+        js_set_renderer_size(
+            *RENDERER_MAP.get(renderer).unwrap(),
+            width as i32,
+            height as i32,
+            quality as i32,
+        );
+    }
+}
+
 fn update() {
     // let world = &mut WORLD_STATE.lock().unwrap();
     // for t in world.tiles.iter_mut() {
@@ -88,7 +100,14 @@ fn update() {
 fn initial_draw() {
     unsafe {
         let world = &mut WORLD_STATE.lock().unwrap();
-        js_set_canvas_size(world.width as i32, world.height as i32);
+        js_set_screen_size(
+            world.width as i32,
+            world.height as i32,
+            world.quality as i32,
+        );
+        set_renderer_size("tile_bg", world.width, world.height, world.quality);
+        set_renderer_size("main", world.width, world.height, world.quality);
+        set_renderer_size("fps", 200, 70, world.quality);
     }
     draw_background();
 }

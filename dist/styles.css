@@ -9,13 +9,12 @@ body {
   background: black;
 }
 
-#world {
+#renderer {
   display: flex;
-  justify-content: center;
   margin: 50px auto;
 }
 
-#world canvas {
+#renderer canvas {
   display: block;
   position: absolute;
 }

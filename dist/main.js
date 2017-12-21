@@ -13,7 +13,8 @@ const init = () => {
     js_random_range: randomRange,
     js_request_tick: renderManager.requestNextTick,
     js_start_interval_tick: renderManager.startIntervalTick,
-    js_set_canvas_size: renderManager.setCanvasSize,
+    js_set_screen_size: renderManager.setScreenSize,
+    js_set_renderer_size: renderManager.setRendererSize,
     js_clear_screen: renderManager.clearScreen,
     js_update: renderManager.update,
     js_draw_tile: renderManager.drawTile,
@@ -25,10 +26,11 @@ const init = () => {
 };
 
 class CanvasRenderer {
-  constructor(canvasId, width, height) {
+  constructor(canvasId) {
     this.bindMethods(this);
-    this.canvas = document.getElementById(canvasId);
-    this.setSize(width, height);
+    this.canvas = document.createElement('canvas');
+    this.canvas.id = canvasId;
+    this.canvas = document.getElementById('renderer').appendChild(this.canvas);
     this.ctx = this.canvas.getContext('2d');
   }
 
@@ -36,11 +38,14 @@ class CanvasRenderer {
     t.setSize = t.setSize.bind(t);
     t.clearScreen = t.clearScreen.bind(t);
     t.drawRect = t.drawRect.bind(t);
+    t.drawText = t.drawText.bind(t);
   }
 
-  setSize(width, height) {
+  setSize(width, height, quality) {
     this.canvas.width = width;
     this.canvas.height = height;
+    this.canvas.style.width = `${width / quality}px`;
+    this.canvas.style.height = `${height / quality}px`;
   }
 
   clearScreen() {
@@ -53,26 +58,36 @@ class CanvasRenderer {
     ctx.fillStyle = `hsla(${ch}, ${cs}%, ${cl}%, ${ca})`;
     ctx.fillRect(px, py, sx, sy);
   }
+
+  drawText(text, fontSize, px, py) {
+    const { ctx } = this;
+    ctx.fillStyle = '#fff';
+    ctx.font = `${fontSize}px Monaco, Consolas, Courier, monospace`;
+    ctx.fillText(text, px, py);
+  }
 }
 
 class RenderManager {
   constructor() {
     this.bindMethods(this);
-    const defaultWidth = 800;
-    const defaultHeight = 600;
     this.isIntervalTick = false;
     this.wasmModuleTick = () => {};
+    this.lastUpdateTime = 0;
+    this.lastFpsRenderTime = 0;
+    this.fps = 0;
     // Could have multiple canvas renderers (background, foreground) and render
     // at different frequencies. Their index is their id which rust/wasm passes
     // down to certain functions.
     this.renderers = [
-      new CanvasRenderer('tile_bg', defaultWidth, defaultHeight),
-      new CanvasRenderer('main', defaultWidth, defaultHeight),
+      new CanvasRenderer('tile_bg'),
+      new CanvasRenderer('main'),
+      new CanvasRenderer('fps'),
     ];
   }
 
   bindMethods(t) {
-    t.setCanvasSize = t.setCanvasSize.bind(t);
+    t.setScreenSize = t.setScreenSize.bind(t);
+    t.setRendererSize = t.setRendererSize.bind(t);
     t.setWasmModuleTicker = t.setWasmModuleTicker.bind(t);
     t.clearScreen = t.clearScreen.bind(t);
     t.update = t.update.bind(t);
@@ -81,10 +96,14 @@ class RenderManager {
     t.drawTile = t.drawTile.bind(t);
   }
 
-  setCanvasSize(width, height) {
-    this.renderers.forEach(r => {
-      r.setSize(width, height);
-    });
+  setScreenSize(width, height, quality) {
+    const wrapper = document.getElementById('renderer');
+    wrapper.style.width = `${width / quality}px`;
+    wrapper.style.height = `${height / quality}px`;
+  }
+
+  setRendererSize(rendererId, width, height, quality) {
+    this.renderers[rendererId].setSize(width, height, quality);
   }
 
   setWasmModuleTicker(wasmModuleTicker) {
@@ -95,11 +114,19 @@ class RenderManager {
     this.renderers[rendererId].clearScreen();
   }
 
+  // for minimal neccessary client updates
   update() {
-    // for minimal neccessary client updates
+    if (this.lastUpdateTime) {
+      if (Math.floor(this.lastUpdateTime) % 9 === 0) {
+        const delta = (performance.now() - this.lastUpdateTime) / 1000;
+        this.fps = 1 / delta;
+      }
+    }
+    this.lastUpdateTime = performance.now();
   }
 
   requestNextTick() {
+    this.drawFps(); // TODO: move call to wasm
     if (this.isIntervalTick) return;
     window.requestAnimationFrame(this.wasmModuleTick);
   }
@@ -118,6 +145,14 @@ class RenderManager {
   // TODO: should just export drawRect instead? More generic?
   drawTile(rendererId, px, py, size, ch, cs, cl, ca) {
     this.renderers[rendererId].drawRect(px, py, size, size, ch, cs, cl, ca);
+  }
+
+  drawFps() {
+    const renderDelayMs = 50;
+    if (this.lastFpsRenderTime > this.lastUpdateTime - renderDelayMs) return;
+    this.lastFpsRenderTime = performance.now();
+    this.clearScreen(2);
+    this.renderers[2].drawText(`fps: ${Math.ceil(this.fps)}`, 40, 5, 45);
   }
 }
 
