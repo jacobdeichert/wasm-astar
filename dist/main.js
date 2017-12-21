@@ -117,10 +117,8 @@ class RenderManager {
   // for minimal neccessary client updates
   update() {
     if (this.lastUpdateTime) {
-      if (Math.floor(this.lastUpdateTime) % 9 === 0) {
-        const delta = (performance.now() - this.lastUpdateTime) / 1000;
-        this.fps = 1 / delta;
-      }
+      const delta = (performance.now() - this.lastUpdateTime) / 1000;
+      this.fps = 1 / delta;
     }
     this.lastUpdateTime = performance.now();
   }
@@ -148,11 +146,11 @@ class RenderManager {
   }
 
   drawFps() {
-    const renderDelayMs = 50;
+    const renderDelayMs = 150;
     if (this.lastFpsRenderTime > this.lastUpdateTime - renderDelayMs) return;
     this.lastFpsRenderTime = performance.now();
     this.clearScreen(2);
-    this.renderers[2].drawText(`fps: ${Math.ceil(this.fps)}`, 40, 5, 45);
+    this.renderers[2].drawText(`fps: ${Math.round(this.fps)}`, 40, 5, 45);
   }
 }
 
