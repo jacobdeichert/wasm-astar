@@ -35,6 +35,7 @@ impl WorldState {
             start_target: Tile::default(),
             end_target: Tile::default(),
         };
+        w.set_all_tile_sides();
         w.set_target_tiles();
         w
     }
@@ -80,6 +81,26 @@ impl WorldState {
         // self.start_target.transform = Transform::from(&self.get_tile_at(0, 0).transform);
         // self.end_target.transform = Transform::from(&self.get_tile_at(8, 12).transform);
     }
+
+    fn set_all_tile_sides(&mut self) {
+        let num_x_tiles = (self.width / self.tile_size) as i32;
+        let num_y_tiles = (self.height / self.tile_size) as i32;
+        for t in self.tiles.iter_mut() {
+            if t.x_id + 1 < num_x_tiles {
+                t.right = t.x_id + 1;
+            }
+            if t.x_id - 1 >= 0 {
+                t.left = t.x_id - 1;
+            }
+
+            if t.y_id - 1 >= 0 {
+                t.top = t.y_id - 1;
+            }
+            if t.y_id + 1 < num_y_tiles {
+                t.bottom = t.y_id + 1;
+            }
+        }
+    }
 }
 
 fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile> {
@@ -91,6 +112,8 @@ fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile
             let py = y as f64 * tile_size as f64;
             let size = tile_size as f64;
             let mut t: Tile = Tile::new(px, py, size);
+            t.x_id = x as i32;
+            t.y_id = y as i32;
             // Every other tile is true and rows are offset by one. This creates a checkerboard
             let checkerboard_tile_test = (x + y) % 2 == 0;
             let hue = if checkerboard_tile_test { 0 } else { 120 };

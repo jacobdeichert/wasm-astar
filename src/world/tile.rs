@@ -4,6 +4,12 @@ use engine::{Color, Transform};
 pub struct Tile {
     pub transform: Transform,
     pub color: Color,
+    pub x_id: i32,
+    pub y_id: i32,
+    pub top: i32,
+    pub bottom: i32,
+    pub left: i32,
+    pub right: i32,
 }
 
 impl Tile {
@@ -11,14 +17,17 @@ impl Tile {
         Tile {
             transform: Transform::new(x, y, size, size),
             color: Color::default(),
+            x_id: 0,
+            y_id: 0,
+            top: -1,
+            bottom: -1,
+            left: -1,
+            right: -1,
         }
     }
 
     pub fn default() -> Tile {
-        Tile {
-            transform: Transform::default(),
-            color: Color::default(),
-        }
+        Tile::new(0_f64, 0_f64, 1_f64)
     }
 
     // pub fn update(&mut self) {
