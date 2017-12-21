@@ -97,6 +97,10 @@ fn draw() {
     let world = &mut WORLD_STATE.lock().unwrap();
     draw_tile("main", &world.start_target);
     draw_tile("main", &world.end_target);
+    world.calc_path();
+    for t in world.path.iter() {
+        draw_tile("main", &t);
+    }
 }
 
 fn draw_background() {

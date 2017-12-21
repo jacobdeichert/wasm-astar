@@ -11,6 +11,7 @@ pub struct WorldState {
     pub start_target: Tile,
     pub end_target: Tile,
     pub tiles: Vec<Tile>,
+    pub path: Vec<Tile>,
 }
 
 impl WorldState {
@@ -26,6 +27,7 @@ impl WorldState {
             height,
             tile_size,
             tiles,
+            path: Vec::new(),
             start_target: Tile::default(),
             end_target: Tile::default(),
         };
@@ -36,6 +38,17 @@ impl WorldState {
     pub fn get_tile_at(&mut self, x: u32, y: u32) -> &mut Tile {
         let index = self.get_tile_id_at(x, y);
         &mut self.tiles[index]
+    }
+
+    pub fn calc_path(&mut self) {
+        let t1 = self.get_tile_at(1, 0).clone();
+        let t2 = self.get_tile_at(1, 1).clone();
+        let t3 = self.get_tile_at(2, 1).clone();
+        self.path = vec![t1, t2, t3];
+        for t in self.path.iter_mut() {
+            t.color.h = 300;
+            t.color.l = 70;
+        }
     }
 
     fn get_tile_id_at(&self, x: u32, y: u32) -> usize {
