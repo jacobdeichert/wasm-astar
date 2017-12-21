@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 mod world;
 mod engine;
+mod utils;
 use world::{Tile, WorldState};
 
 lazy_static! {
@@ -18,9 +19,10 @@ lazy_static! {
 }
 
 // All imported js functions
-// NOTE: some are used in other modules. See utils.
+// NOTE: some are used in other modules.
 extern "C" {
-    fn js_random_range(min: c_int, max: c_int);
+    // Used inside utils mod
+    // fn js_random_range(min: c_int, max: c_int);
     fn js_clear_screen(renderer_id: c_int);
     fn js_set_screen_size(width: c_int, height: c_int, quality: c_int);
     fn js_set_renderer_size(renderer_id: c_int, width: c_int, height: c_int, quality: c_int);

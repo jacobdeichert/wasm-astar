@@ -1,4 +1,5 @@
 use engine::Color;
+use utils::random_range;
 
 mod tile;
 pub use self::tile::Tile;
@@ -44,14 +45,24 @@ impl WorldState {
     }
 
     pub fn calc_path(&mut self) {
-        let t1 = self.get_tile_at(1, 0).clone();
-        let t2 = self.get_tile_at(1, 1).clone();
-        let t3 = self.get_tile_at(2, 1).clone();
+        let t1 = self.get_random_tile();
+        let t2 = self.get_random_tile();
+        let t3 = self.get_random_tile();
         self.path = vec![t1, t2, t3];
         for t in self.path.iter_mut() {
             t.color.h = 300;
             t.color.l = 70;
         }
+    }
+
+    fn get_random_tile(&mut self) -> Tile {
+        let num_x_tiles = (self.width / self.tile_size) as i32;
+        let num_y_tiles = (self.height / self.tile_size) as i32;
+        let index = self.get_tile_id_at(
+            random_range(0, num_x_tiles - 1) as u32,
+            random_range(0, num_y_tiles - 1) as u32,
+        );
+        self.tiles[index].clone()
     }
 
     fn get_tile_id_at(&self, x: u32, y: u32) -> usize {
@@ -61,10 +72,10 @@ impl WorldState {
     }
 
     fn set_target_tiles(&mut self) {
-        self.start_target = self.get_tile_at(0, 0).clone();
-        self.start_target.color.h = 220;
-        self.end_target = self.get_tile_at(12, 8).clone();
-        self.end_target.color.h = 280;
+        self.start_target = self.get_tile_at(3, 3).clone();
+        self.start_target.color.l = 100;
+        self.end_target = self.get_tile_at(17, 12).clone();
+        self.end_target.color.l = 0;
         // Another way I could have done it.
         // self.start_target.transform = Transform::from(&self.get_tile_at(0, 0).transform);
         // self.end_target.transform = Transform::from(&self.get_tile_at(8, 12).transform);
