@@ -29,6 +29,16 @@ fn get_layer(layer: &str) -> i32 {
 extern "C" {
     fn js_update();
     fn js_draw_fps(renderer_id: c_int, fps: c_double);
+    fn js_draw_circle(
+        renderer_id: c_int,
+        px: c_double,
+        py: c_double,
+        radius: c_double,
+        ch: c_int,
+        cs: c_int,
+        cl: c_int,
+        ca: c_int,
+    );
     fn js_draw_tile(
         renderer_id: c_int,
         px: c_double,
@@ -112,11 +122,11 @@ fn draw_background() {
 
 fn draw_path(world: &WorldState, t: &Tile) {
     unsafe {
-        js_draw_tile(
+        js_draw_circle(
             get_layer(&"tile_bg"),
-            t.transform.pos_x,
-            t.transform.pos_y,
-            t.transform.scale_x,
+            t.transform.pos_x + (t.transform.scale_x / 2_f64),
+            t.transform.pos_y + (t.transform.scale_y / 2_f64),
+            8_f64,
             280,
             100,
             73,

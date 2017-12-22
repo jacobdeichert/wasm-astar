@@ -91,6 +91,10 @@ const getWasmImports = () => {
       WASM_ASTAR.layers[layerId].drawRect(px, py, size, size, ch, cs, cl, ca);
     },
 
+    js_draw_circle(layerId, px, py, r, ch, cs, cl, ca) {
+      WASM_ASTAR.layers[layerId].drawCircle(px, py, r, ch, cs, cl, ca);
+    },
+
     js_draw_fps(layerId, fps) {
       WASM_ASTAR.layers[layerId].drawText(`fps: ${Math.round(fps)}`, 40, 5, 45);
     },
@@ -119,6 +123,13 @@ const createLayer = id => {
     drawRect(px, py, sx, sy, ch, cs, cl, ca) {
       ctx.fillStyle = `hsla(${ch}, ${cs}%, ${cl}%, ${ca})`;
       ctx.fillRect(px, py, sx, sy);
+    },
+    drawCircle(px, py, r, ch, cs, cl, ca) {
+      ctx.fillStyle = `hsla(${ch}, ${cs}%, ${cl}%, ${ca})`;
+      ctx.beginPath();
+      ctx.arc(px, py, r, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
     },
     drawText(text, fontSize, px, py) {
       ctx.fillStyle = '#fff';
