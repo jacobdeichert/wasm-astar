@@ -1,2 +1,19 @@
-# wasm-astar
-Rust Wasm A* Pathfinding with Canvas Rendering
+# Rust WebAssembly A* Pathfinding Demo
+
+
+
+
+## Building
+
+Follow the instructions on Hello Rust to get the wasm toolchain set up: https://www.hellorust.com/setup/wasm-target/
+
+~~~sh
+# Install the latest nightly
+rustup toolchain install nightly
+
+# Add wasm as a target
+rustup target add wasm32-unknown-unknown --toolchain nightly
+
+# Run the build script
+./scripts/build.sh
+~~~
