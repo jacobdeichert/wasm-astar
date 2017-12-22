@@ -218,7 +218,7 @@ fn draw_player(world: &WorldState) {
             Layer::Main as i32,
             world.player.pos_x + half_tile,
             world.player.pos_y + half_tile,
-            15_f64,
+            (world.tile_size / 4) as f64,
             32,
             100,
             55,

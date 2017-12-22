@@ -1,7 +1,7 @@
 const WASM_ASTAR = {
   wasmModule: null,
   wasmModulePath: 'wasm_astar.wasm',
-  debug: true, // Wasm converts to an int
+  debug: false, // Wasm converts to an int
   renderIntervalMs: 1000, // Used in debug mode
   // Can have multiple canvas layers (background, foreground) and render
   // at different frequencies.

@@ -43,6 +43,8 @@ impl WorldState {
     }
 
     pub fn reset(&mut self) {
+        let tile_sizes = vec![10, 20, 50];
+        self.tile_size = tile_sizes[random_range(0, (tile_sizes.len() - 1) as i32) as usize];
         self.tiles = generate_tiles(self.width, self.height, self.tile_size);
         self.set_all_tile_sides();
         self.set_target_tiles();
@@ -57,12 +59,13 @@ impl WorldState {
 
     pub fn update_player(&mut self, x_dir: i32, y_dir: i32) {
         let half_tile = (self.tile_size / 2) as f64;
+        let half_radius = ((self.tile_size / 4) / 2) as f64;
         let new_x = self.player.pos_x + (7_f64 * x_dir as f64);
         let new_y = self.player.pos_y + (7_f64 * y_dir as f64);
-        if new_x + half_tile < self.width as f64 && new_x + 7.5 > 0_f64 {
+        if new_x + half_tile < self.width as f64 && new_x + half_radius > 0_f64 {
             self.player.pos_x = new_x;
         }
-        if new_y + half_tile < self.height as f64 && new_y + 7.5 > 0_f64 {
+        if new_y + half_tile < self.height as f64 && new_y + half_radius > 0_f64 {
             self.player.pos_y = new_y;
         }
     }
