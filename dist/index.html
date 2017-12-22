@@ -4,13 +4,27 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rust Wasm</title>
+    <title>Rust Wasm A* Pathfinding</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div id="wrapper">
-        <div id="renderer"></div>
+    <div id="fullscreen">
+        <div id="wrapper">
+            <div id="renderer"></div>
+            <div id="info">
+                <p>
+                    Use
+                    <span>arrow keys</span> to move the starting point
+                    <br/> Randomize the map with
+                    <span>spacebar</span>
+                </p>
+                <p>Made by
+                    <a href="https://twitter.com/jakedeichert" rel="noopener">@jakedeichert</a> ·
+                    <a href="https://github.com/jakedeichert/wasm-astar" rel="noopener">GitHub</a>
+                </p>
+            </div>
+        </div>
     </div>
     <script src="main.js"></script>
 </body>

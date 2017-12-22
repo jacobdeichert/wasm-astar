@@ -7,16 +7,44 @@
 
 body {
   background: black;
+  font-family: Monaco, Consolas, Courier, monospace;
 }
 
-#wrapper {
+#fullscreen {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
 
+#wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 #renderer canvas {
   display: block;
   position: absolute;
+}
+
+#info {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  font-size: 14px;
+  margin: 10px 0 0;
+  opacity: 0.5;
+  width: 100%;
+}
+
+#info:hover {
+  opacity: 1;
+}
+
+#info span {
+  color: #d67fff;
+}
+
+#info a {
+  color: #42b6ff;
 }
