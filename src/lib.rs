@@ -88,6 +88,7 @@ fn initial_draw() {
         );
         browser::set_layer_size(get_layer("main"), world.width, world.height, world.quality);
         browser::set_layer_size(get_layer("fps"), 200, 70, world.quality);
+        world.calc_astar();
     }
     draw_background();
 }
@@ -95,6 +96,8 @@ fn initial_draw() {
 fn draw(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
     draw_path(world, &world.tiles[world.end_id as usize]);
+    draw_tile("main", &world.tiles[world.start_id as usize]);
+    draw_tile("main", &world.tiles[world.end_id as usize]);
     draw_fps(elapsed_time);
 }
 
@@ -102,6 +105,24 @@ fn draw_background() {
     let world = WORLD_STATE.lock().unwrap();
     for t in world.tiles.iter() {
         draw_tile("tile_bg", &t);
+    }
+}
+
+fn draw_path(world: &WorldState, t: &Tile) {
+    unsafe {
+        js_draw_tile(
+            get_layer(&"tile_bg"),
+            t.transform.pos_x,
+            t.transform.pos_y,
+            t.transform.scale_x,
+            280,
+            100,
+            73,
+            1,
+        );
+    }
+    if t.parent_id >= 0 {
+        draw_path(world, &world.tiles[t.parent_id as usize]);
     }
 }
 
