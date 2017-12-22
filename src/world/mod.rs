@@ -67,104 +67,43 @@ impl WorldState {
 
             current_node = open_nodes.swap_remove(0);
             self.tiles[current_node].is_closed = true;
-            let curr = self.tiles[current_node].clone();
 
-            // Check the side nodes if they:
-            //  - if the side exists (id >= 0)
-            //  - TODO: if it's a wall, it's not set as a side
-            if curr.right >= 0 {
-                let right = self.tiles[curr.right as usize].clone();
-                if !right.is_closed {
-                    let mut parent_id = 0;
-                    let mut parent_g = -1;
-                    // if it's not already on the open list
-                    if !open_nodes.contains(&(curr.right as usize)) {
-                        open_nodes.push(curr.right as usize);
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    // if it's already on the open list and the path is better (lower G value)
-                    else if right.g > curr.g + 10 {
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    if parent_g != -1 {
-                        let r = &mut self.tiles[curr.right as usize];
-                        r.parent_id = parent_id as i32;
-                        r.calc_f_g(parent_g);
-                    }
+            let top = self.tiles[current_node].top;
+            self.check_node(&mut open_nodes, current_node, top);
+            let bottom = self.tiles[current_node].bottom;
+            self.check_node(&mut open_nodes, current_node, bottom);
+
+            let right = self.tiles[current_node].right;
+            self.check_node(&mut open_nodes, current_node, right);
+            let left = self.tiles[current_node].left;
+            self.check_node(&mut open_nodes, current_node, left);
+        }
+    }
+
+    fn check_node(&mut self, open_nodes: &mut Vec<usize>, curr_node_id: usize, side_node_id: i32) {
+        // Check each side node:
+        //  - if the side exists (id >= 0)
+        //  - TODO: if it's a wall, it's not set as a side
+        if side_node_id >= 0 {
+            let side = self.tiles[side_node_id as usize].clone();
+            if !side.is_closed {
+                let mut parent_id = 0;
+                let mut parent_g = -1;
+                // if it's not already on the open list
+                if !open_nodes.contains(&(side_node_id as usize)) {
+                    open_nodes.push(side_node_id as usize);
+                    parent_id = curr_node_id;
+                    parent_g = self.tiles[curr_node_id].g;
                 }
-            }
-
-            if curr.left >= 0 {
-                let left = self.tiles[curr.left as usize].clone();
-                if !left.is_closed {
-                    let mut parent_id = 0;
-                    let mut parent_g = -1;
-                    // if it's not already on the open list
-                    if !open_nodes.contains(&(curr.left as usize)) {
-                        open_nodes.push(curr.left as usize);
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    // if it's already on the open list and the path is better (lower G value)
-                    else if left.g > curr.g + 10 {
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    if parent_g != -1 {
-                        let r = &mut self.tiles[curr.left as usize];
-                        r.parent_id = parent_id as i32;
-                        r.calc_f_g(parent_g);
-                    }
+                // if it's already on the open list and the path is better (lower G value)
+                else if side.g > side.g + 10 {
+                    parent_id = curr_node_id;
+                    parent_g = self.tiles[curr_node_id].g;
                 }
-            }
-
-            if curr.top >= 0 {
-                let top = self.tiles[curr.top as usize].clone();
-                if !top.is_closed {
-                    let mut parent_id = 0;
-                    let mut parent_g = -1;
-                    // if it's not already on the open list
-                    if !open_nodes.contains(&(curr.top as usize)) {
-                        open_nodes.push(curr.top as usize);
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    // if it's already on the open list and the path is better (lower G value)
-                    else if top.g > curr.g + 10 {
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    if parent_g != -1 {
-                        let r = &mut self.tiles[curr.top as usize];
-                        r.parent_id = parent_id as i32;
-                        r.calc_f_g(parent_g);
-                    }
-                }
-            }
-
-            if curr.bottom >= 0 {
-                let bottom = self.tiles[curr.bottom as usize].clone();
-                if !bottom.is_closed {
-                    let mut parent_id = 0;
-                    let mut parent_g = -1;
-                    // if it's not already on the open list
-                    if !open_nodes.contains(&(curr.bottom as usize)) {
-                        open_nodes.push(curr.bottom as usize);
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    // if it's already on the open list and the path is better (lower G value)
-                    else if bottom.g > curr.g + 10 {
-                        parent_id = curr.node_id;
-                        parent_g = self.tiles[curr.node_id].g;
-                    }
-                    if parent_g != -1 {
-                        let r = &mut self.tiles[curr.bottom as usize];
-                        r.parent_id = parent_id as i32;
-                        r.calc_f_g(parent_g);
-                    }
+                if parent_g != -1 {
+                    let r = &mut self.tiles[side_node_id as usize];
+                    r.parent_id = parent_id as i32;
+                    r.calc_f_g(parent_g);
                 }
             }
         }
