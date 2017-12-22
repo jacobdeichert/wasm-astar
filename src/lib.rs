@@ -100,13 +100,14 @@ fn update(elapsed_time: f64) {
     world.calc_astar();
 
     if engine.is_key_down(engine::KeyCode::ArrowUp) {
-        world.player.pos_y = world.player.pos_y - 10_f64;
+        world.player.pos_y = world.player.pos_y - 7_f64;
     } else if engine.is_key_down(engine::KeyCode::ArrowDown) {
-        world.player.pos_y = world.player.pos_y + 10_f64;
-    } else if engine.is_key_down(engine::KeyCode::ArrowLeft) {
-        world.player.pos_x = world.player.pos_x - 10_f64;
+        world.player.pos_y = world.player.pos_y + 7_f64;
+    }
+    if engine.is_key_down(engine::KeyCode::ArrowLeft) {
+        world.player.pos_x = world.player.pos_x - 7_f64;
     } else if engine.is_key_down(engine::KeyCode::ArrowRight) {
-        world.player.pos_x = world.player.pos_x + 10_f64;
+        world.player.pos_x = world.player.pos_x + 7_f64;
     }
     unsafe {
         js_update();
