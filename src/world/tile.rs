@@ -14,6 +14,7 @@ pub struct Tile {
     pub right: i32,
     pub is_wall: bool,
     // A* values
+    // TODO: move to a new struct type just for A*
     pub h: i32,
     pub g: i32,
     pub f: i32,

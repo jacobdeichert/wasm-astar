@@ -144,24 +144,23 @@ impl WorldState {
         curr_node_id: usize,
         side_node_id: usize,
     ) {
-        let side = self.tiles[side_node_id as usize].clone();
+        let id = side_node_id as usize;
         let mut parent_id = 0;
         let mut parent_g = -1;
         // if it's not already on the open list
-        if !open_nodes.contains(&(side_node_id as usize)) {
-            open_nodes.push(side_node_id as usize);
+        if !open_nodes.contains(&id) {
+            open_nodes.push(id);
             parent_id = curr_node_id;
             parent_g = self.tiles[curr_node_id].g;
         }
         // if it's already on the open list and the path is better (lower G value)
-        else if side.g > side.g + 10 {
+        else if self.tiles[id].g > self.tiles[id].g + 10 {
             parent_id = curr_node_id;
             parent_g = self.tiles[curr_node_id].g;
         }
         if parent_g != -1 {
-            let r = &mut self.tiles[side_node_id as usize];
-            r.parent_id = parent_id as i32;
-            r.calc_f_g(parent_g);
+            self.tiles[id].parent_id = parent_id as i32;
+            self.tiles[id].calc_f_g(parent_g);
         }
     }
 
@@ -203,9 +202,7 @@ impl WorldState {
     }
 
     fn set_target_tiles(&mut self) {
-        // self.start_id = self.get_tile_id_at(3, 3) as i32;
         self.start_id = self.get_random_tile_id() as i32;
-        // self.end_id = self.get_tile_id_at(17, 12) as i32;
         self.end_id = self.get_random_tile_id() as i32;
         self.player.pos_x = self.tiles[self.start_id as usize].transform.pos_x;
         self.player.pos_y = self.tiles[self.start_id as usize].transform.pos_y;
