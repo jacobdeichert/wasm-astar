@@ -47,6 +47,14 @@ impl WorldState {
         self.set_all_tile_sides();
         self.set_target_tiles();
         self.set_start_node();
+        self.calc_astar();
+
+        // Force a new map if no path found.
+        if self.tiles[self.end_id as usize].parent_id == -1 {
+            self.reset();
+        }
+    }
+
     pub fn update_player(&mut self, x_dir: i32, y_dir: i32) {
         let half_tile = (self.tile_size / 2) as f64;
         let new_x = self.player.pos_x + (7_f64 * x_dir as f64);
