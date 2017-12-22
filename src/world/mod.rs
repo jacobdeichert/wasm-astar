@@ -43,16 +43,6 @@ impl WorldState {
         &mut self.tiles[index]
     }
 
-    pub fn calc_path(&mut self) {
-        let t1 = self.get_random_tile();
-        let t2 = self.get_random_tile();
-        let t3 = self.get_random_tile();
-        self.path = vec![t1, t2, t3];
-        for t in self.path.iter_mut() {
-            t.color.h = 300;
-            t.color.l = 70;
-        }
-    }
 
     fn get_random_tile(&mut self) -> Tile {
         let num_x_tiles = (self.width / self.tile_size) as i32;
