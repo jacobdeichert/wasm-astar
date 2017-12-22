@@ -47,6 +47,16 @@ impl WorldState {
         self.set_all_tile_sides();
         self.set_target_tiles();
         self.set_start_node();
+    pub fn update_player(&mut self, x_dir: i32, y_dir: i32) {
+        let half_tile = (self.tile_size / 2) as f64;
+        let new_x = self.player.pos_x + (7_f64 * x_dir as f64);
+        let new_y = self.player.pos_y + (7_f64 * y_dir as f64);
+        if new_x + half_tile < self.width as f64 && new_x + 7.5 > 0_f64 {
+            self.player.pos_x = new_x;
+        }
+        if new_y + half_tile < self.height as f64 && new_y + 7.5 > 0_f64 {
+            self.player.pos_y = new_y;
+        }
     }
 
     pub fn set_start_node(&mut self) {
