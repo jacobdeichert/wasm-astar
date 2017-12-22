@@ -44,7 +44,11 @@ impl WorldState {
     }
 
     pub fn set_start_node(&mut self) {
-        self.start_id = self.get_random_tile_id() as i32;
+        let half_tile = (self.tile_size / 2) as f64;
+        self.start_id = self.get_tile_id_closest_to(
+            self.player.pos_x - half_tile,
+            self.player.pos_y - half_tile,
+        ) as i32;
     }
 
     pub fn calc_astar(&mut self) {
@@ -153,6 +157,13 @@ impl WorldState {
         let num_tiles = self.width / self.tile_size;
         let index = y * num_tiles + x;
         index as usize
+    }
+
+    fn get_tile_id_closest_to(&self, x: f64, y: f64) -> usize {
+        let size = self.tile_size as f64;
+        let x_id = (x / size).ceil() as u32;
+        let y_id = (y / size).ceil() as u32;
+        self.get_tile_id_at(x_id, y_id)
     }
 
     fn get_random_tile_id(&self) -> usize {
