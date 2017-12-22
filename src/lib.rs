@@ -94,13 +94,8 @@ fn initial_draw() {
 
 fn draw(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
-    draw_tile("main", &world.start_target);
-    draw_tile("main", &world.end_target);
+    draw_path(world, &world.tiles[world.end_id as usize]);
     draw_fps(elapsed_time);
-    world.calc_path();
-    for t in world.path.iter() {
-        draw_tile("main", &t);
-    }
 }
 
 fn draw_background() {
