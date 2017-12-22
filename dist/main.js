@@ -32,6 +32,10 @@ const getWasmImports = () => {
     // ========================================================================
     // SET UP ENGINE CALLS
     // ========================================================================
+    js_random() {
+      return Math.random();
+    },
+
     js_random_range(min, max) {
       return Math.floor(Math.random() * (max + 1 - min)) + min;
     },
