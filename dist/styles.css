@@ -7,7 +7,14 @@
 
 body {
   background: black;
+  color: rgb(175, 175, 175);
   font-family: Monaco, Consolas, Courier, monospace;
+}
+
+h1 {
+  font-size: 16px;
+  margin: 0 0 10px;
+  text-align: center;
 }
 
 #fullscreen {
@@ -30,7 +37,6 @@ body {
 #info {
   display: flex;
   justify-content: space-between;
-  color: white;
   font-size: 14px;
   margin: 10px 0 0;
   opacity: 0.5;
