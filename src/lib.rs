@@ -96,6 +96,7 @@ fn update(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
     let engine = &mut ENGINE_STATE.lock().unwrap();
     engine.update(elapsed_time);
+    world.set_start_node();
     world.calc_astar();
 
     if engine.is_key_down(engine::KeyCode::ArrowUp) {

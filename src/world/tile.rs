@@ -12,7 +12,6 @@ pub struct Tile {
     pub bottom: i32,
     pub left: i32,
     pub right: i32,
-    pub is_closed: bool,
     pub is_wall: bool,
     // A* values
     pub h: i32,
@@ -33,7 +32,6 @@ impl Tile {
             bottom: -1,
             left: -1,
             right: -1,
-            is_closed: false,
             is_wall: false,
             h: 0,
             g: 0,
@@ -45,7 +43,14 @@ impl Tile {
         Tile::new(0_f64, 0_f64, 1_f64)
     }
 
-    pub fn calc_h(&mut self, end_node: &Tile) {
+    pub fn reset(&mut self, end_node: &Tile) {
+        self.parent_id = -1;
+        self.g = 0;
+        self.f = 0;
+        self.calc_h(end_node);
+    }
+
+    fn calc_h(&mut self, end_node: &Tile) {
         // H: difference between this position and the end target
         // only needs to be calculated once
         let x_diff = (self.transform.pos_x - end_node.transform.pos_x).abs() as i32;

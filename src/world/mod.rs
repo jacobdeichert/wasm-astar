@@ -1,4 +1,7 @@
+use std::collections::HashSet;
+
 use engine::{Color, Transform};
+use utils::{random, random_range};
 
 mod tile;
 pub use self::tile::Tile;
@@ -36,23 +39,24 @@ impl WorldState {
         };
         w.set_all_tile_sides();
         w.set_target_tiles();
+        w.set_start_node();
         w
     }
 
-    pub fn get_tile_at(&mut self, x: u32, y: u32) -> &mut Tile {
-        let index = self.get_tile_id_at(x, y);
-        &mut self.tiles[index]
+    pub fn set_start_node(&mut self) {
+        self.start_id = self.get_random_tile_id() as i32;
     }
 
     pub fn calc_astar(&mut self) {
         let mut open_nodes: Vec<usize> = Vec::new();
-        open_nodes.push(self.start_id as usize);
+        let mut closed_nodes = HashSet::new();
 
+        open_nodes.push(self.start_id as usize);
         let mut current_node;
         let end = self.tiles[self.end_id as usize].clone();
 
         for t in self.tiles.iter_mut() {
-            t.calc_h(&end);
+            t.reset(&end);
         }
 
         let mut flip_side_check_counter = 0;
@@ -60,7 +64,7 @@ impl WorldState {
         // Stop searching when either:
         // 1) target is closed, in which case the path has been found
         // 2) failed to find the target and the open list is empty (no path)
-        while !self.tiles[self.end_id as usize].is_closed && open_nodes.len() > 0 {
+        while !closed_nodes.contains(&(self.end_id as usize)) && open_nodes.len() > 0 {
             // Find lowest F score
             open_nodes.sort_by(|a, b| {
                 let a_f = &self.tiles[*a].f;
@@ -69,7 +73,7 @@ impl WorldState {
             });
 
             current_node = open_nodes.swap_remove(0);
-            self.tiles[current_node].is_closed = true;
+            closed_nodes.insert(current_node);
 
             let side_ids = vec![
                 self.tiles[current_node].top,
@@ -81,12 +85,21 @@ impl WorldState {
             // Flip the check of left/right and top/bottom checks every few iterations
             // so a zig zag pattern appears instead of producing L shaped paths.
             if flip_side_check_counter % 4 == 0 {
+                // Check each side node.
+                // If the side exists (id >= 0)
+                // If it's a wall, it's not set as a side so we don't need to worry about it.
                 for s in side_ids.iter() {
-                    self.check_node(&mut open_nodes, current_node, *s);
+                    let id = *s as usize;
+                    if *s >= 0 && !closed_nodes.contains(&id) {
+                        self.check_node(&mut open_nodes, current_node, id);
+                    }
                 }
             } else {
                 for s in side_ids.iter().rev() {
-                    self.check_node(&mut open_nodes, current_node, *s);
+                    let id = *s as usize;
+                    if *s >= 0 && !closed_nodes.contains(&id) {
+                        self.check_node(&mut open_nodes, current_node, id);
+                    }
                 }
             };
 
@@ -94,38 +107,36 @@ impl WorldState {
         }
     }
 
+    fn check_node(
+        &mut self,
+        open_nodes: &mut Vec<usize>,
+        curr_node_id: usize,
+        side_node_id: usize,
+    ) {
+        let side = self.tiles[side_node_id as usize].clone();
+        let mut parent_id = 0;
+        let mut parent_g = -1;
+        // if it's not already on the open list
+        if !open_nodes.contains(&(side_node_id as usize)) {
+            open_nodes.push(side_node_id as usize);
+            parent_id = curr_node_id;
+            parent_g = self.tiles[curr_node_id].g;
+        }
+        // if it's already on the open list and the path is better (lower G value)
+        else if side.g > side.g + 10 {
+            parent_id = curr_node_id;
+            parent_g = self.tiles[curr_node_id].g;
+        }
+        if parent_g != -1 {
+            let r = &mut self.tiles[side_node_id as usize];
+            r.parent_id = parent_id as i32;
+            r.calc_f_g(parent_g);
+        }
+    }
+
     fn get_tile_at(&mut self, x: u32, y: u32) -> &mut Tile {
         let index = self.get_tile_id_at(x, y);
         &mut self.tiles[index]
-    }
-
-    fn check_node(&mut self, open_nodes: &mut Vec<usize>, curr_node_id: usize, side_node_id: i32) {
-        // Check each side node:
-        //  - if the side exists (id >= 0)
-        //  - TODO: if it's a wall, it's not set as a side
-        if side_node_id >= 0 {
-            let side = self.tiles[side_node_id as usize].clone();
-            if !side.is_closed {
-                let mut parent_id = 0;
-                let mut parent_g = -1;
-                // if it's not already on the open list
-                if !open_nodes.contains(&(side_node_id as usize)) {
-                    open_nodes.push(side_node_id as usize);
-                    parent_id = curr_node_id;
-                    parent_g = self.tiles[curr_node_id].g;
-                }
-                // if it's already on the open list and the path is better (lower G value)
-                else if side.g > side.g + 10 {
-                    parent_id = curr_node_id;
-                    parent_g = self.tiles[curr_node_id].g;
-                }
-                if parent_g != -1 {
-                    let r = &mut self.tiles[side_node_id as usize];
-                    r.parent_id = parent_id as i32;
-                    r.calc_f_g(parent_g);
-                }
-            }
-        }
     }
 
     fn get_random_tile(&mut self) -> Tile {
