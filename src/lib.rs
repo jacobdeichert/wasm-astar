@@ -129,8 +129,16 @@ fn initial_draw() {
 fn draw(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
     draw_path(world, &world.tiles[world.end_id as usize]);
-    draw_tile("main", &world.tiles[world.start_id as usize]);
-    draw_tile("main", &world.tiles[world.end_id as usize]);
+    draw_tile_with_color(
+        "main",
+        &world.tiles[world.start_id as usize],
+        &engine::Color::new(32, 100, 60, 0.3),
+    );
+    draw_tile_with_color(
+        "main",
+        &world.tiles[world.end_id as usize],
+        &engine::Color::new(0, 0, 0, 1.0),
+    );
     draw_player(world);
     draw_fps(elapsed_time);
 }
@@ -161,16 +169,20 @@ fn draw_path(world: &WorldState, t: &Tile) {
 }
 
 fn draw_tile(renderer: &str, t: &Tile) {
+    draw_tile_with_color(renderer, &t, &t.color);
+}
+
+fn draw_tile_with_color(renderer: &str, t: &Tile, c: &engine::Color) {
     unsafe {
         js_draw_tile(
             get_layer(renderer),
             t.transform.pos_x,
             t.transform.pos_y,
             t.transform.scale_x,
-            t.color.h as i32,
-            t.color.s as i32,
-            t.color.l as i32,
-            t.color.a,
+            c.h as i32,
+            c.s as i32,
+            c.l as i32,
+            c.a,
         );
     }
 }

@@ -94,6 +94,11 @@ impl WorldState {
         }
     }
 
+    fn get_tile_at(&mut self, x: u32, y: u32) -> &mut Tile {
+        let index = self.get_tile_id_at(x, y);
+        &mut self.tiles[index]
+    }
+
     fn check_node(&mut self, open_nodes: &mut Vec<usize>, curr_node_id: usize, side_node_id: i32) {
         // Check each side node:
         //  - if the side exists (id >= 0)
@@ -151,13 +156,8 @@ impl WorldState {
     fn set_target_tiles(&mut self) {
         // self.start_id = self.get_tile_id_at(3, 3) as i32;
         self.start_id = self.get_random_tile_id() as i32;
-        self.tiles[self.start_id as usize].color.h = 32;
-        self.tiles[self.start_id as usize].color.s = 100;
-        self.tiles[self.start_id as usize].color.l = 60;
-        self.tiles[self.start_id as usize].color.a = 0.3;
         // self.end_id = self.get_tile_id_at(17, 12) as i32;
         self.end_id = self.get_random_tile_id() as i32;
-        self.tiles[self.end_id as usize].color.l = 0;
         self.player.pos_x = self.tiles[self.start_id as usize].transform.pos_x;
         self.player.pos_y = self.tiles[self.start_id as usize].transform.pos_y;
     }
