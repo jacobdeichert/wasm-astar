@@ -9,9 +9,11 @@ body {
   background: black;
 }
 
-#renderer {
+#wrapper {
   display: flex;
-  margin: 50px auto;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 #renderer canvas {
