@@ -1,11 +1,18 @@
 use std::os::raw::c_int;
 
 extern "C" {
+    fn js_create_layer(id_ptr: *const u8, id_len: u32, key: c_int);
     fn js_clear_screen(renderer_id: c_int);
     fn js_set_screen_size(width: c_int, height: c_int, quality: c_int);
     fn js_set_layer_size(renderer_id: c_int, width: c_int, height: c_int, quality: c_int);
     fn js_request_tick();
     fn js_start_interval_tick(ms: c_int);
+}
+
+pub fn create_layer(id: &str, key: i32) {
+    unsafe {
+        js_create_layer(id.as_ptr(), id.len() as u32, key);
+    }
 }
 
 pub fn clear_screen(layer: i32) {
