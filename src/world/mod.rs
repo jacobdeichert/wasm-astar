@@ -1,5 +1,5 @@
 use engine::Color;
-use utils::random_range;
+use utils::{random, random_range};
 
 mod tile;
 pub use self::tile::Tile;
@@ -191,9 +191,17 @@ fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile
             t.x_id = x as i32;
             t.y_id = y as i32;
             t.node_id = (y * num_x_tiles + x) as usize;
+            t.is_wall = {
+                if random() >= 0.7 {
+                    true
+                } else {
+                    false
+                }
+            };
             // Every other tile is true and rows are offset by one. This creates a checkerboard
-            let checkerboard_tile_test = (x + y) % 2 == 0;
-            let lightness = if checkerboard_tile_test { 30 } else { 20 };
+            // let checkerboard_tile_test = (x + y) % 2 == 0;
+            // let lightness = if checkerboard_tile_test { 30 } else { 20 };
+            let lightness = if t.is_wall { 20 } else { 30 };
             t.color = Color::new(0, 0, lightness, 1);
             vec.push(t);
         }

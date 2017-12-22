@@ -13,6 +13,7 @@ pub struct Tile {
     pub left: i32,
     pub right: i32,
     pub is_closed: bool,
+    pub is_wall: bool,
     // A* values
     pub h: i32,
     pub g: i32,
@@ -33,6 +34,7 @@ impl Tile {
             left: -1,
             right: -1,
             is_closed: false,
+            is_wall: false,
             h: 0,
             g: 0,
             f: 0,
