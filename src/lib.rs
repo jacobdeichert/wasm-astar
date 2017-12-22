@@ -3,7 +3,6 @@ extern crate lazy_static;
 
 use std::sync::Mutex;
 use std::os::raw::{c_double, c_float, c_int};
-use std::collections::HashMap;
 
 mod engine;
 mod browser;
@@ -11,18 +10,6 @@ mod utils;
 mod world;
 use world::{Tile, WorldState};
 use engine::EngineState;
-
-lazy_static! {
-    static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
-    static ref ENGINE_STATE: Mutex<EngineState> = Mutex::new(EngineState::new());
-}
-
-// Maps to WASM_ASTAR.layers on the client side
-enum Layer {
-    TileBg = 0,
-    Main = 1,
-    Fps = 2,
-}
 
 // Imported js functions. Note, some are used in other modules (browser, utils).
 extern "C" {
@@ -48,6 +35,21 @@ extern "C" {
         cl: c_int,
         ca: c_float,
     );
+}
+
+// Learned about this pattern from rocket_wasm on github
+// https://github.com/aochagavia/rocket_wasm/blob/d0ca51beb9c7c351a1f0266206edfd553bf078d3/src/lib.rs
+// QUESTION: is there a better way/place to store state???
+lazy_static! {
+    static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
+    static ref ENGINE_STATE: Mutex<EngineState> = Mutex::new(EngineState::new());
+}
+
+// Maps to WASM_ASTAR.layers on the client side
+enum Layer {
+    TileBg = 0,
+    Main = 1,
+    Fps = 2,
 }
 
 #[no_mangle]
