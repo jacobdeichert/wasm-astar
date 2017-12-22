@@ -121,16 +121,19 @@ fn handle_input() {
         world.recent_regen = false;
     }
 
+    let mut x_dir = 0;
+    let mut y_dir = 0;
     if engine.is_key_down(engine::KeyCode::ArrowUp) {
-        world.update_player(0, -1);
+        y_dir = -1;
     } else if engine.is_key_down(engine::KeyCode::ArrowDown) {
-        world.update_player(0, 1);
+        y_dir = 1;
     }
     if engine.is_key_down(engine::KeyCode::ArrowLeft) {
-        world.update_player(-1, 0);
+        x_dir = -1;
     } else if engine.is_key_down(engine::KeyCode::ArrowRight) {
-        world.update_player(1, 0);
+        x_dir = 1;
     }
+    world.update_player(x_dir, y_dir);
 }
 
 fn initial_draw() {
