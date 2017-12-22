@@ -159,19 +159,33 @@ impl WorldState {
     fn set_all_tile_sides(&mut self) {
         let num_x_tiles = (self.width / self.tile_size) as i32;
         let num_y_tiles = (self.height / self.tile_size) as i32;
-        for t in self.tiles.iter_mut() {
-            if t.x_id + 1 < num_x_tiles {
-                t.right = t.y_id * num_x_tiles + t.x_id + 1;
+        for t_id in 0..self.tiles.len() {
+            let x_id = self.tiles[t_id].x_id;
+            let y_id = self.tiles[t_id].y_id;
+            if x_id + 1 < num_x_tiles {
+                let right = y_id * num_x_tiles + x_id + 1;
+                if !self.tiles[right as usize].is_wall {
+                    self.tiles[t_id].right = right;
+                }
             }
-            if t.x_id - 1 >= 0 {
-                t.left = t.y_id * num_x_tiles + t.x_id - 1;
+            if x_id - 1 >= 0 {
+                let left = y_id * num_x_tiles + x_id - 1;
+                if !self.tiles[left as usize].is_wall {
+                    self.tiles[t_id].left = left;
+                }
             }
 
-            if t.y_id - 1 >= 0 {
-                t.top = ((t.y_id - 1) * num_x_tiles) + t.x_id;
+            if y_id - 1 >= 0 {
+                let top = ((y_id - 1) * num_x_tiles) + x_id;
+                if !self.tiles[top as usize].is_wall {
+                    self.tiles[t_id].top = top;
+                }
             }
-            if t.y_id + 1 < num_y_tiles {
-                t.bottom = ((t.y_id + 1) * num_x_tiles) + t.x_id;
+            if y_id + 1 < num_y_tiles {
+                let bottom = ((y_id + 1) * num_x_tiles) + x_id;
+                if !self.tiles[bottom as usize].is_wall {
+                    self.tiles[t_id].bottom = bottom;
+                }
             }
         }
     }
