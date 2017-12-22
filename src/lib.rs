@@ -15,22 +15,21 @@ use engine::EngineState;
 lazy_static! {
     static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
     static ref ENGINE_STATE: Mutex<EngineState> = Mutex::new(EngineState::new());
-    // Maps to RenderManager.renderers on the client side
-    static ref RENDERER_MAP: HashMap<&'static str, i32> = {
-        [("tile_bg", 0), ("main", 1), ("fps", 2)].iter().cloned().collect()
-    };
 }
 
-fn get_layer(layer: &str) -> i32 {
-    *RENDERER_MAP.get(layer).unwrap()
+// Maps to WASM_ASTAR.layers on the client side
+enum Layer {
+    TileBg = 0,
+    Main = 1,
+    Fps = 2,
 }
 
 // Imported js functions. Note, some are used in other modules (browser, utils).
 extern "C" {
     fn js_update();
-    fn js_draw_fps(renderer_id: c_int, fps: c_double);
+    fn js_draw_fps(layer_id: c_int, fps: c_double);
     fn js_draw_circle(
-        renderer_id: c_int,
+        layer_id: c_int,
         px: c_double,
         py: c_double,
         radius: c_double,
@@ -40,7 +39,7 @@ extern "C" {
         ca: c_float,
     );
     fn js_draw_tile(
-        renderer_id: c_int,
+        layer_id: c_int,
         px: c_double,
         py: c_double,
         size: c_double,
@@ -74,7 +73,7 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
 
 #[no_mangle]
 pub extern "C" fn tick(elapsed_time: f64) {
-    browser::clear_screen(get_layer("main"));
+    browser::clear_screen(Layer::Main as i32);
     update(elapsed_time);
     draw(elapsed_time);
     browser::request_next_tick();
@@ -118,13 +117,13 @@ fn initial_draw() {
     let world = &mut WORLD_STATE.lock().unwrap();
     browser::set_screen_size(world.width, world.height, world.quality);
     browser::set_layer_size(
-        get_layer("tile_bg"),
+        Layer::TileBg as i32,
         world.width,
         world.height,
         world.quality,
     );
-    browser::set_layer_size(get_layer("main"), world.width, world.height, world.quality);
-    browser::set_layer_size(get_layer("fps"), 200, 70, world.quality);
+    browser::set_layer_size(Layer::Main as i32, world.width, world.height, world.quality);
+    browser::set_layer_size(Layer::Fps as i32, 200, 70, world.quality);
     draw_background(world);
 }
 
@@ -132,12 +131,12 @@ fn draw(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
     draw_path(world, &world.tiles[world.end_id as usize]);
     draw_tile_with_color(
-        "main",
+        Layer::Main,
         &world.tiles[world.start_id as usize],
         &engine::Color::new(32, 100, 60, 0.3),
     );
     draw_tile_with_color(
-        "main",
+        Layer::Main,
         &world.tiles[world.end_id as usize],
         &engine::Color::new(0, 0, 0, 1.0),
     );
@@ -147,7 +146,7 @@ fn draw(elapsed_time: f64) {
 
 fn draw_background(world: &WorldState) {
     for t in world.tiles.iter() {
-        draw_tile("tile_bg", &t);
+        draw_tile(Layer::TileBg, &t);
     }
 }
 
@@ -155,7 +154,7 @@ fn draw_path(world: &WorldState, t: &Tile) {
     let half_tile = (world.tile_size / 2) as f64;
     unsafe {
         js_draw_circle(
-            get_layer(&"main"),
+            Layer::Main as i32,
             t.transform.pos_x + half_tile,
             t.transform.pos_y + half_tile,
             (t.transform.scale_x / 5_f64),
@@ -170,14 +169,14 @@ fn draw_path(world: &WorldState, t: &Tile) {
     }
 }
 
-fn draw_tile(renderer: &str, t: &Tile) {
-    draw_tile_with_color(renderer, &t, &t.color);
+fn draw_tile(layer: Layer, t: &Tile) {
+    draw_tile_with_color(layer, &t, &t.color);
 }
 
-fn draw_tile_with_color(renderer: &str, t: &Tile, c: &engine::Color) {
+fn draw_tile_with_color(layer: Layer, t: &Tile, c: &engine::Color) {
     unsafe {
         js_draw_tile(
-            get_layer(renderer),
+            layer as i32,
             t.transform.pos_x,
             t.transform.pos_y,
             t.transform.scale_x,
@@ -193,7 +192,7 @@ fn draw_player(world: &WorldState) {
     let half_tile = (world.tile_size / 2) as f64;
     unsafe {
         js_draw_circle(
-            get_layer(&"main"),
+            Layer::Main as i32,
             world.player.pos_x + half_tile,
             world.player.pos_y + half_tile,
             15_f64,
@@ -209,9 +208,9 @@ fn draw_fps(elapsed_time: f64) {
     let engine = &mut ENGINE_STATE.lock().unwrap();
     let fps = engine.fps;
     engine.render_fps(elapsed_time, 150, || {
-        browser::clear_screen(get_layer("fps"));
+        browser::clear_screen(Layer::Fps as i32);
         unsafe {
-            js_draw_fps(get_layer("fps"), fps);
+            js_draw_fps(Layer::Fps as i32, fps);
         }
     });
 }
