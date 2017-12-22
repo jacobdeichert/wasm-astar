@@ -2,7 +2,7 @@
 extern crate lazy_static;
 
 use std::sync::Mutex;
-use std::os::raw::{c_double, c_int};
+use std::os::raw::{c_double, c_float, c_int};
 use std::collections::HashMap;
 
 mod engine;
@@ -37,7 +37,7 @@ extern "C" {
         ch: c_int,
         cs: c_int,
         cl: c_int,
-        ca: c_int,
+        ca: c_float,
     );
     fn js_draw_tile(
         renderer_id: c_int,
@@ -47,7 +47,7 @@ extern "C" {
         ch: c_int,
         cs: c_int,
         cl: c_int,
-        ca: c_int,
+        ca: c_float,
     );
 }
 
@@ -97,25 +97,33 @@ fn update(elapsed_time: f64) {
     let engine = &mut ENGINE_STATE.lock().unwrap();
     engine.update(elapsed_time);
     world.calc_astar();
+
+    if engine.is_key_down(engine::KeyCode::ArrowUp) {
+        world.player.pos_y = world.player.pos_y - 10_f64;
+    } else if engine.is_key_down(engine::KeyCode::ArrowDown) {
+        world.player.pos_y = world.player.pos_y + 10_f64;
+    } else if engine.is_key_down(engine::KeyCode::ArrowLeft) {
+        world.player.pos_x = world.player.pos_x - 10_f64;
+    } else if engine.is_key_down(engine::KeyCode::ArrowRight) {
+        world.player.pos_x = world.player.pos_x + 10_f64;
+    }
     unsafe {
         js_update();
     }
 }
 
 fn initial_draw() {
-    {
-        let world = &mut WORLD_STATE.lock().unwrap();
-        browser::set_screen_size(world.width, world.height, world.quality);
-        browser::set_layer_size(
-            get_layer("tile_bg"),
-            world.width,
-            world.height,
-            world.quality,
-        );
-        browser::set_layer_size(get_layer("main"), world.width, world.height, world.quality);
-        browser::set_layer_size(get_layer("fps"), 200, 70, world.quality);
-    }
-    draw_background();
+    let world = &mut WORLD_STATE.lock().unwrap();
+    browser::set_screen_size(world.width, world.height, world.quality);
+    browser::set_layer_size(
+        get_layer("tile_bg"),
+        world.width,
+        world.height,
+        world.quality,
+    );
+    browser::set_layer_size(get_layer("main"), world.width, world.height, world.quality);
+    browser::set_layer_size(get_layer("fps"), 200, 70, world.quality);
+    draw_background(world);
 }
 
 fn draw(elapsed_time: f64) {
@@ -123,27 +131,28 @@ fn draw(elapsed_time: f64) {
     draw_path(world, &world.tiles[world.end_id as usize]);
     draw_tile("main", &world.tiles[world.start_id as usize]);
     draw_tile("main", &world.tiles[world.end_id as usize]);
+    draw_player(world);
     draw_fps(elapsed_time);
 }
 
-fn draw_background() {
-    let world = WORLD_STATE.lock().unwrap();
+fn draw_background(world: &WorldState) {
     for t in world.tiles.iter() {
         draw_tile("tile_bg", &t);
     }
 }
 
 fn draw_path(world: &WorldState, t: &Tile) {
+    let half_tile = (world.tile_size / 2) as f64;
     unsafe {
         js_draw_circle(
-            get_layer(&"tile_bg"),
-            t.transform.pos_x + (t.transform.scale_x / 2_f64),
-            t.transform.pos_y + (t.transform.scale_y / 2_f64),
+            get_layer(&"main"),
+            t.transform.pos_x + half_tile,
+            t.transform.pos_y + half_tile,
             (t.transform.scale_x / 5_f64),
             280,
             100,
             73,
-            1,
+            1_f32,
         );
     }
     if t.parent_id >= 0 {
@@ -161,11 +170,26 @@ fn draw_tile(renderer: &str, t: &Tile) {
             t.color.h as i32,
             t.color.s as i32,
             t.color.l as i32,
-            t.color.a as i32,
+            t.color.a,
         );
     }
 }
 
+fn draw_player(world: &WorldState) {
+    let half_tile = (world.tile_size / 2) as f64;
+    unsafe {
+        js_draw_circle(
+            get_layer(&"main"),
+            world.player.pos_x + half_tile,
+            world.player.pos_y + half_tile,
+            15_f64,
+            32,
+            100,
+            55,
+            1_f32,
+        );
+    }
+}
 
 fn draw_fps(elapsed_time: f64) {
     let engine = &mut ENGINE_STATE.lock().unwrap();

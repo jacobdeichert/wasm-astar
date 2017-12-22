@@ -90,11 +90,11 @@ pub struct Color {
     pub h: u16,
     pub s: u16,
     pub l: u16,
-    pub a: u16,
+    pub a: f32,
 }
 
 impl Color {
-    pub fn new(h: u16, s: u16, l: u16, a: u16) -> Color {
+    pub fn new(h: u16, s: u16, l: u16, a: f32) -> Color {
         Color { h, s, l, a }
     }
 
@@ -103,7 +103,7 @@ impl Color {
             h: 0,
             s: 100,
             l: 80,
-            a: 1,
+            a: 1_f32,
         }
     }
 }

@@ -1,5 +1,4 @@
-use engine::Color;
-use utils::{random, random_range};
+use engine::{Color, Transform};
 
 mod tile;
 pub use self::tile::Tile;
@@ -12,6 +11,7 @@ pub struct WorldState {
     pub tile_size: u32,
     pub start_id: i32,
     pub end_id: i32,
+    pub player: Transform,
     pub tiles: Vec<Tile>,
 }
 
@@ -30,6 +30,7 @@ impl WorldState {
             quality,
             tile_size,
             tiles,
+            player: Transform::default(),
             start_id: -1,
             end_id: -1,
         };
@@ -150,10 +151,15 @@ impl WorldState {
     fn set_target_tiles(&mut self) {
         // self.start_id = self.get_tile_id_at(3, 3) as i32;
         self.start_id = self.get_random_tile_id() as i32;
-        self.tiles[self.start_id as usize].color.l = 100;
+        self.tiles[self.start_id as usize].color.h = 32;
+        self.tiles[self.start_id as usize].color.s = 100;
+        self.tiles[self.start_id as usize].color.l = 60;
+        self.tiles[self.start_id as usize].color.a = 0.3;
         // self.end_id = self.get_tile_id_at(17, 12) as i32;
         self.end_id = self.get_random_tile_id() as i32;
         self.tiles[self.end_id as usize].color.l = 0;
+        self.player.pos_x = self.tiles[self.start_id as usize].transform.pos_x;
+        self.player.pos_y = self.tiles[self.start_id as usize].transform.pos_y;
     }
 
     fn set_all_tile_sides(&mut self) {
@@ -216,7 +222,7 @@ fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile
             // let checkerboard_tile_test = (x + y) % 2 == 0;
             // let lightness = if checkerboard_tile_test { 30 } else { 20 };
             let lightness = if t.is_wall { 20 } else { 30 };
-            t.color = Color::new(0, 0, lightness, 1);
+            t.color = Color::new(0, 0, lightness, 1_f32);
             vec.push(t);
         }
     }
