@@ -6,6 +6,7 @@ pub struct Tile {
     pub color: Color,
     pub x_id: i32,
     pub y_id: i32,
+    pub node_id: usize,
     pub parent_id: i32,
     pub top: i32,
     pub bottom: i32,
@@ -25,6 +26,7 @@ impl Tile {
             color: Color::default(),
             x_id: 0,
             y_id: 0,
+            node_id: 0,
             parent_id: -1,
             top: -1,
             bottom: -1,
@@ -41,7 +43,7 @@ impl Tile {
         Tile::new(0_f64, 0_f64, 1_f64)
     }
 
-    pub fn calc_h(&mut self, end_node: Tile) {
+    pub fn calc_h(&mut self, end_node: &Tile) {
         // H: difference between this position and the end target
         // only needs to be calculated once
         let x_diff = (self.transform.pos_x - end_node.transform.pos_x).abs() as i32;
@@ -49,8 +51,8 @@ impl Tile {
         self.h = (x_diff + y_diff) * 10;
     }
 
-    pub fn calc_f_g(&mut self, tiles: &Vec<Tile>) {
-        self.g = tiles[self.parent_id as usize].g + 10;
+    pub fn calc_f_g(&mut self, parent_g: i32) {
+        self.g = parent_g + 10;
         self.f = self.g + self.h;
     }
 }
