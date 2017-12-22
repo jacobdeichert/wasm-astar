@@ -36,10 +36,10 @@ const getWasmImports = () => {
       return Math.floor(Math.random() * (max + 1 - min)) + min;
     },
 
-    js_log(msgId) {
-      // This is a horrible way to debug.
-      // TODO: pass strings from wasm and decode them properly
-      console.log(`WASM LOG: ${msgId}`);
+    js_log(ptr, len) {
+      const buf = new Uint8Array(WASM_ASTAR.wasmModule.memory.buffer, ptr, len);
+      const msg = new TextDecoder('utf8').decode(buf);
+      console.log(`%cWASM >%c${msg}`, 'color: #ae59ff;');
     },
 
     js_request_tick() {

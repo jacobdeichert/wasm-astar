@@ -43,6 +43,7 @@ extern "C" {
 
 #[no_mangle]
 pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
+    utils::log("Initializing Rust/WASM");
     // Requires block curlies so lifetime of world ends which causes unlock
     // and allows draw_background() to gain control of the lock.
     // Otherwise, this generic client error occurs:
@@ -51,6 +52,7 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
     {
         let world = &mut WORLD_STATE.lock().unwrap();
         world.debug = if debug == 1 { true } else { false };
+        utils::log_fmt(format!("Debug Mode: {}", world.debug));
         if world.debug {
             browser::start_interval_tick(render_interval_ms);
         } else {
