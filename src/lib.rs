@@ -81,8 +81,10 @@ pub extern "C" fn tick(elapsed_time: f64) {
 }
 
 fn update(elapsed_time: f64) {
+    let world = &mut WORLD_STATE.lock().unwrap();
     let engine = &mut ENGINE_STATE.lock().unwrap();
     engine.update(elapsed_time);
+    world.calc_astar();
     unsafe {
         js_update();
     }
@@ -100,7 +102,6 @@ fn initial_draw() {
         );
         browser::set_layer_size(get_layer("main"), world.width, world.height, world.quality);
         browser::set_layer_size(get_layer("fps"), 200, 70, world.quality);
-        world.calc_astar();
     }
     draw_background();
 }
@@ -126,7 +127,7 @@ fn draw_path(world: &WorldState, t: &Tile) {
             get_layer(&"tile_bg"),
             t.transform.pos_x + (t.transform.scale_x / 2_f64),
             t.transform.pos_y + (t.transform.scale_y / 2_f64),
-            8_f64,
+            (t.transform.scale_x / 5_f64),
             280,
             100,
             73,
