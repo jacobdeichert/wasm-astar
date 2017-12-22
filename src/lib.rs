@@ -96,10 +96,20 @@ pub extern "C" fn key_up(key_code: u32) {
 }
 
 fn update(elapsed_time: f64) {
-    let world = &mut WORLD_STATE.lock().unwrap();
+    handle_input();
     let engine = &mut ENGINE_STATE.lock().unwrap();
     engine.update(elapsed_time);
+    let world = &mut WORLD_STATE.lock().unwrap();
+    world.set_start_node();
+    world.calc_astar();
+    unsafe {
+        js_update();
+    }
+}
 
+fn handle_input() {
+    let world = &mut WORLD_STATE.lock().unwrap();
+    let engine = &mut ENGINE_STATE.lock().unwrap();
     if !engine.was_key_down(engine::KeyCode::Spacebar)
         && engine.is_key_down(engine::KeyCode::Spacebar) && !world.recent_regen
     {
@@ -111,9 +121,6 @@ fn update(elapsed_time: f64) {
         world.recent_regen = false;
     }
 
-    world.set_start_node();
-    world.calc_astar();
-
     if engine.is_key_down(engine::KeyCode::ArrowUp) {
         world.update_player(0, -1);
     } else if engine.is_key_down(engine::KeyCode::ArrowDown) {
@@ -123,9 +130,6 @@ fn update(elapsed_time: f64) {
         world.update_player(-1, 0);
     } else if engine.is_key_down(engine::KeyCode::ArrowRight) {
         world.update_player(1, 0);
-    }
-    unsafe {
-        js_update();
     }
 }
 
