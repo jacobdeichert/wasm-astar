@@ -1,7 +1,17 @@
+use std::collections::HashMap;
+
+pub enum KeyCode {
+    ArrowUp = 38,
+    ArrowDown = 40,
+    ArrowLeft = 37,
+    ArrowRight = 39,
+}
+
 pub struct EngineState {
     pub last_timestamp: f64,
     pub last_fps_render_timestamp: f64,
     pub fps: f64,
+    key_state: HashMap<u32, bool>,
 }
 
 impl EngineState {
@@ -10,6 +20,7 @@ impl EngineState {
             last_timestamp: 0_f64,
             last_fps_render_timestamp: 0_f64,
             fps: 0_f64,
+            key_state: HashMap::new(),
         }
     }
 
@@ -28,6 +39,21 @@ impl EngineState {
         if self.last_fps_render_timestamp + (render_delay_ms as f64) < elapsed_time {
             self.last_fps_render_timestamp = elapsed_time;
             render_cb();
+        }
+    }
+
+    pub fn set_key_down(&mut self, raw_key_code: u32) {
+        self.key_state.insert(raw_key_code, true);
+    }
+
+    pub fn set_key_up(&mut self, raw_key_code: u32) {
+        self.key_state.insert(raw_key_code, false);
+    }
+
+    pub fn is_key_down(&self, key_code: KeyCode) -> bool {
+        match self.key_state.get(&(key_code as u32)) {
+            Some(is_down) => *is_down,
+            None => false,
         }
     }
 }

@@ -80,6 +80,18 @@ pub extern "C" fn tick(elapsed_time: f64) {
     browser::request_next_tick();
 }
 
+#[no_mangle]
+pub extern "C" fn key_down(key_code: u32) {
+    let engine = &mut ENGINE_STATE.lock().unwrap();
+    engine.set_key_down(key_code);
+}
+
+#[no_mangle]
+pub extern "C" fn key_up(key_code: u32) {
+    let engine = &mut ENGINE_STATE.lock().unwrap();
+    engine.set_key_up(key_code);
+}
+
 fn update(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
     let engine = &mut ENGINE_STATE.lock().unwrap();

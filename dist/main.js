@@ -20,6 +20,12 @@ const init = () => {
   return loadWasm(wasmModulePath, getWasmImports()).then(wasmModule => {
     WASM_ASTAR.wasmModule = wasmModule;
     WASM_ASTAR.wasmModule.init(debug, renderIntervalMs);
+    window.addEventListener('keydown', e => {
+      WASM_ASTAR.wasmModule.key_down(e.keyCode);
+    });
+    window.addEventListener('keyup', e => {
+      WASM_ASTAR.wasmModule.key_up(e.keyCode);
+    });
   });
 };
 
