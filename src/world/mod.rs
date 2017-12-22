@@ -16,6 +16,7 @@ pub struct WorldState {
     pub end_id: i32,
     pub player: Transform,
     pub tiles: Vec<Tile>,
+    pub recent_regen: bool,
 }
 
 impl WorldState {
@@ -24,7 +25,6 @@ impl WorldState {
         let width: u32 = 900 * quality;
         let height: u32 = 600 * quality;
         let tile_size: u32 = 50;
-        let tiles = generate_tiles(width, height, tile_size);
 
         let mut w = WorldState {
             debug: false,
@@ -32,15 +32,21 @@ impl WorldState {
             height,
             quality,
             tile_size,
-            tiles,
+            tiles: Vec::new(),
             player: Transform::default(),
             start_id: -1,
             end_id: -1,
+            recent_regen: false,
         };
-        w.set_all_tile_sides();
-        w.set_target_tiles();
-        w.set_start_node();
+        w.reset();
         w
+    }
+
+    pub fn reset(&mut self) {
+        self.tiles = generate_tiles(self.width, self.height, self.tile_size);
+        self.set_all_tile_sides();
+        self.set_target_tiles();
+        self.set_start_node();
     }
 
     pub fn set_start_node(&mut self) {

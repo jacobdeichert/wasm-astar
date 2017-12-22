@@ -5,6 +5,7 @@ pub enum KeyCode {
     ArrowDown = 40,
     ArrowLeft = 37,
     ArrowRight = 39,
+    Spacebar = 32,
 }
 
 pub struct EngineState {
@@ -12,6 +13,7 @@ pub struct EngineState {
     pub last_fps_render_timestamp: f64,
     pub fps: f64,
     key_state: HashMap<u32, bool>,
+    was_down: HashMap<u32, bool>,
 }
 
 impl EngineState {
@@ -21,6 +23,7 @@ impl EngineState {
             last_fps_render_timestamp: 0_f64,
             fps: 0_f64,
             key_state: HashMap::new(),
+            was_down: HashMap::new(),
         }
     }
 
@@ -43,16 +46,37 @@ impl EngineState {
     }
 
     pub fn set_key_down(&mut self, raw_key_code: u32) {
-        self.key_state.insert(raw_key_code, true);
+        let was_down = self.is_raw_key_down(raw_key_code);
+        self.was_down.insert(raw_key_code, was_down);
+        if !was_down {
+            self.key_state.insert(raw_key_code, true);
+        } else {
+            self.was_down.insert(raw_key_code, true);
+        }
     }
 
     pub fn set_key_up(&mut self, raw_key_code: u32) {
+        self.was_down.insert(raw_key_code, false);
         self.key_state.insert(raw_key_code, false);
     }
 
     pub fn is_key_down(&self, key_code: KeyCode) -> bool {
         match self.key_state.get(&(key_code as u32)) {
             Some(is_down) => *is_down,
+            None => false,
+        }
+    }
+
+    fn is_raw_key_down(&self, raw_key_code: u32) -> bool {
+        match self.key_state.get(&raw_key_code) {
+            Some(is_down) => *is_down,
+            None => false,
+        }
+    }
+
+    pub fn was_key_down(&self, key_code: KeyCode) -> bool {
+        match self.was_down.get(&(key_code as u32)) {
+            Some(was_down) => *was_down,
             None => false,
         }
     }

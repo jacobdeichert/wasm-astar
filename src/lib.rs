@@ -99,6 +99,18 @@ fn update(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
     let engine = &mut ENGINE_STATE.lock().unwrap();
     engine.update(elapsed_time);
+
+    if !engine.was_key_down(engine::KeyCode::Spacebar)
+        && engine.is_key_down(engine::KeyCode::Spacebar) && !world.recent_regen
+    {
+        world.reset();
+        browser::clear_screen(Layer::Main as i32);
+        // Horrible check until i implement event callbacks for key presses
+        world.recent_regen = true;
+    } else if !engine.is_key_down(engine::KeyCode::Spacebar) {
+        world.recent_regen = false;
+    }
+
     world.set_start_node();
     world.calc_astar();
 
@@ -133,6 +145,9 @@ fn initial_draw() {
 
 fn draw(elapsed_time: f64) {
     let world = &mut WORLD_STATE.lock().unwrap();
+    if world.recent_regen {
+        draw_background(world);
+    }
     draw_path(world, &world.tiles[world.end_id as usize]);
     draw_tile_with_color(
         Layer::Main,
