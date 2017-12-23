@@ -172,9 +172,9 @@ fn draw(elapsed_time: f64) {
     draw_tile_with_color(
         Layer::Main,
         &world.tiles[world.end_id as usize],
-        &engine::Color::new(0, 0, 0, 1.0),
+        &engine::Color::new(112, 89, 61, 1.0),
     );
-    draw_player(world);
+    // draw_player(world);
     draw_fps(elapsed_time);
 }
 
