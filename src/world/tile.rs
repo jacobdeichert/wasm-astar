@@ -1,5 +1,7 @@
 use engine::{Color, Transform};
 
+pub const MOVE_COST: i32 = 10;
+
 #[derive(Clone)]
 pub struct Tile {
     pub transform: Transform,
@@ -52,15 +54,21 @@ impl Tile {
     }
 
     fn calc_h(&mut self, end_node: &Tile) {
+        if self.is_wall {
+            return;
+        }
         // H: difference between this position and the end target
-        // only needs to be calculated once
-        let x_diff = (self.transform.pos_x - end_node.transform.pos_x).abs() as i32;
-        let y_diff = (self.transform.pos_y - end_node.transform.pos_y).abs() as i32;
-        self.h = (x_diff + y_diff) * 10;
+        // REMINDER TO SELF: the MOVE_COST is very dependant on the x/y diff scale.
+        // I was using px,py before by accident which caused diffs to be very large
+        // and my MOVE_COST of 10 became useless. Using x/y ids keeps the diffs small
+        // enough for MOVE_COST of 10 to work.
+        let x_diff = (self.x_id - end_node.x_id).abs() as i32;
+        let y_diff = (self.y_id - end_node.y_id).abs() as i32;
+        self.h = (x_diff + y_diff) * MOVE_COST;
     }
 
     pub fn calc_f_g(&mut self, parent_g: i32) {
-        self.g = parent_g + 10;
+        self.g = parent_g + MOVE_COST;
         self.f = self.g + self.h;
     }
 }

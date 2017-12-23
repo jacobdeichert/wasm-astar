@@ -161,12 +161,12 @@ impl WorldState {
         if !open_nodes.contains(&id) {
             open_nodes.push(id);
             parent_id = curr_node_id;
-            parent_g = self.tiles[curr_node_id].g;
+            parent_g = self.tiles[parent_id].g;
         }
         // if it's already on the open list and the path is better (lower G value)
-        else if self.tiles[id].g > self.tiles[curr_node_id].g + 10 {
+        else if self.tiles[id].g > self.tiles[curr_node_id].g + tile::MOVE_COST {
             parent_id = curr_node_id;
-            parent_g = self.tiles[curr_node_id].g;
+            parent_g = self.tiles[parent_id].g;
         }
         if parent_g != -1 {
             self.tiles[id].parent_id = parent_id as i32;
