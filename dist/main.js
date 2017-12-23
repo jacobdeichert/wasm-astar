@@ -144,7 +144,11 @@ const getWasmImports = () => {
     js_draw_fps(layerId, fps) {
       WASM_ASTAR.layers
         .get(layerId)
-        .drawText(`fps: ${Math.round(fps)}`, 40, 5, 45);
+        .drawText(`fps: ${Math.round(fps)}`, 35, 5, 45);
+    },
+
+    js_path_count(layerId, count) {
+      WASM_ASTAR.layers.get(layerId).drawText(`path: ${count}`, 35, 5, 95);
     },
   };
 };

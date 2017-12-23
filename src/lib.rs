@@ -15,6 +15,7 @@ use engine::EngineState;
 extern "C" {
     fn js_update();
     fn js_draw_fps(layer_id: c_int, fps: c_double);
+    fn js_path_count(layer_id: c_int, count: c_int);
     fn js_draw_circle(
         layer_id: c_int,
         px: c_double,
@@ -174,6 +175,8 @@ fn draw(elapsed_time: f64) {
         &world.tiles[world.end_id as usize],
         &engine::Color::new(112, 89, 61, 1.0),
     );
+    let path_count = get_path_count(world, &world.tiles[world.end_id as usize], 0);
+    draw_path_count(path_count);
     // draw_player(world);
     draw_fps(elapsed_time);
 }
@@ -203,11 +206,11 @@ fn draw_path(world: &WorldState, t: &Tile) {
     }
 }
 
-fn print_path_count(world: &WorldState, t: &Tile, counter: i32) {
+fn get_path_count(world: &WorldState, t: &Tile, counter: i32) -> i32 {
     if t.parent_id >= 0 {
-        print_path_count(world, &world.tiles[t.parent_id as usize], counter + 1);
+        get_path_count(world, &world.tiles[t.parent_id as usize], counter + 1)
     } else {
-        utils::log_fmt(format!("path count: {}", counter));
+        counter
     }
 }
 
@@ -243,6 +246,12 @@ fn draw_player(world: &WorldState) {
             55,
             1_f32,
         );
+    }
+}
+
+fn draw_path_count(path_count: i32) {
+    unsafe {
+        js_path_count(Layer::Main as i32, path_count);
     }
 }
 
