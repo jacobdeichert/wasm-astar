@@ -6,6 +6,7 @@ const WASM_ASTAR = {
   // Can have multiple canvas layers (background, foreground) and render
   // at different frequencies.
   layers: new Map(),
+  layerWrapperEl: document.getElementById('layer_wrapper'),
 };
 
 const init = () => {
@@ -13,6 +14,12 @@ const init = () => {
   return loadWasm(wasmModulePath, getWasmImports()).then(wasmModule => {
     WASM_ASTAR.wasmModule = wasmModule;
     WASM_ASTAR.wasmModule.init(debug, renderIntervalMs);
+    window.addEventListener('mousemove', e => {
+      // Coordinates relative to the canvas layers. Top left is 0,0
+      const x = e.pageX - WASM_ASTAR.layerWrapperEl.offsetLeft;
+      const y = e.pageY - WASM_ASTAR.layerWrapperEl.offsetTop;
+      WASM_ASTAR.wasmModule.mouse_move(x, y);
+    });
     window.addEventListener('keydown', e => {
       WASM_ASTAR.wasmModule.key_down(e.keyCode);
     });
@@ -65,7 +72,7 @@ const getWasmImports = () => {
 
     js_create_layer(idPtr, idLength, key) {
       const canvas = document
-        .getElementById('renderer')
+        .getElementById('layer_wrapper')
         .appendChild(document.createElement('canvas'));
       canvas.id = wasmReadStrFromMemory(idPtr, idLength);
       const ctx = canvas.getContext('2d');
@@ -103,7 +110,7 @@ const getWasmImports = () => {
     },
 
     js_set_screen_size(width, height, quality) {
-      const wrapper = document.getElementById('renderer');
+      const wrapper = document.getElementById('layer_wrapper');
       wrapper.style.width = `${width / quality}px`;
       wrapper.style.height = `${height / quality}px`;
     },

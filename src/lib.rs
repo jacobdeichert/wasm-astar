@@ -95,6 +95,14 @@ pub extern "C" fn key_up(key_code: u32) {
     engine.set_key_up(key_code);
 }
 
+#[no_mangle]
+pub extern "C" fn mouse_move(x: i32, y: i32) {
+    let engine = &mut ENGINE_STATE.lock().unwrap();
+    let world = &mut WORLD_STATE.lock().unwrap();
+    engine.mouse_move(x, y);
+    world.set_player_pos(x as f64, y as f64);
+}
+
 fn update(elapsed_time: f64) {
     handle_input();
     let engine = &mut ENGINE_STATE.lock().unwrap();

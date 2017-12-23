@@ -12,6 +12,8 @@ pub struct EngineState {
     pub last_timestamp: f64,
     pub last_fps_render_timestamp: f64,
     pub fps: f64,
+    pub mouse_x: i32,
+    pub mouse_y: i32,
     key_state: HashMap<u32, bool>,
     was_down: HashMap<u32, bool>,
 }
@@ -22,6 +24,8 @@ impl EngineState {
             last_timestamp: 0_f64,
             last_fps_render_timestamp: 0_f64,
             fps: 0_f64,
+            mouse_x: 0,
+            mouse_y: 0,
             key_state: HashMap::new(),
             was_down: HashMap::new(),
         }
@@ -61,10 +65,7 @@ impl EngineState {
     }
 
     pub fn is_key_down(&self, key_code: KeyCode) -> bool {
-        match self.key_state.get(&(key_code as u32)) {
-            Some(is_down) => *is_down,
-            None => false,
-        }
+        self.is_raw_key_down(key_code as u32)
     }
 
     fn is_raw_key_down(&self, raw_key_code: u32) -> bool {
@@ -79,6 +80,11 @@ impl EngineState {
             Some(was_down) => *was_down,
             None => false,
         }
+    }
+
+    pub fn mouse_move(&mut self, x: i32, y: i32) {
+        self.mouse_x = x;
+        self.mouse_y = y;
     }
 }
 

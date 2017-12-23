@@ -29,7 +29,7 @@ h1 {
   flex-direction: column;
 }
 
-#renderer canvas {
+#layer_wrapper canvas {
   display: block;
   position: absolute;
 }
