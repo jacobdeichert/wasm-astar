@@ -203,6 +203,14 @@ fn draw_path(world: &WorldState, t: &Tile) {
     }
 }
 
+fn print_path_count(world: &WorldState, t: &Tile, counter: i32) {
+    if t.parent_id >= 0 {
+        print_path_count(world, &world.tiles[t.parent_id as usize], counter + 1);
+    } else {
+        utils::log_fmt(format!("path count: {}", counter));
+    }
+}
+
 fn draw_tile(layer: Layer, t: &Tile) {
     draw_tile_with_color(layer, &t, &t.color);
 }
