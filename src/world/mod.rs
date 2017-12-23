@@ -164,7 +164,7 @@ impl WorldState {
             parent_g = self.tiles[curr_node_id].g;
         }
         // if it's already on the open list and the path is better (lower G value)
-        else if self.tiles[id].g > self.tiles[id].g + 10 {
+        else if self.tiles[id].g > self.tiles[curr_node_id].g + 10 {
             parent_id = curr_node_id;
             parent_g = self.tiles[curr_node_id].g;
         }
