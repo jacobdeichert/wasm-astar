@@ -1,6 +1,7 @@
 # Rust WebAssembly A* Pathfinding Demo
 
 
+![demo gif](dist/demo.gif)
 
 
 ## Building
