@@ -43,18 +43,8 @@ impl WorldState {
     }
 
     pub fn reset(&mut self) {
-        let tile_sizes = vec![10, 20, 50];
-        self.tile_size = tile_sizes[random_range(0, (tile_sizes.len() - 1) as i32) as usize];
-        self.tiles = generate_tiles(self.width, self.height, self.tile_size);
-        self.set_all_tile_sides();
-        self.set_target_tiles();
-        self.set_start_node();
-        self.calc_astar();
-
-        // Force a new map if no path found.
-        if self.tiles[self.end_id as usize].parent_id == -1 {
-            self.reset();
-        }
+        self.load_random_map();
+        // self.load_test_map();
     }
 
     pub fn update_player(&mut self, x_dir: i32, y_dir: i32) {
@@ -269,6 +259,21 @@ impl WorldState {
             map = format!("{}\n", map);
         }
         log_fmt(map);
+    }
+
+    fn load_random_map(&mut self) {
+        let tile_sizes = vec![10, 20, 50];
+        self.tile_size = tile_sizes[random_range(0, (tile_sizes.len() - 1) as i32) as usize];
+        self.tiles = generate_tiles(self.width, self.height, self.tile_size);
+        self.set_all_tile_sides();
+        self.set_target_tiles();
+        self.set_start_node();
+        self.calc_astar();
+
+        // Force a new map if no path found.
+        if self.tiles[self.end_id as usize].parent_id == -1 {
+            self.reset();
+        }
     }
 
     fn load_test_map(&mut self) {
