@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use engine::{Color, Transform};
-use utils::{random, random_range};
+use utils::{log_fmt, random, random_range};
 
 mod tile;
 pub use self::tile::Tile;
@@ -250,6 +250,25 @@ impl WorldState {
                 }
             }
         }
+    }
+
+    fn print_map(&self) {
+        let num_y_tiles = self.height / self.tile_size;
+        let num_x_tiles = self.width / self.tile_size;
+        let mut map = String::from("");
+
+        for y in 0..num_y_tiles {
+            for x in 0..num_x_tiles {
+                let id = self.get_tile_id_at(x, y);
+                if self.tiles[id].is_wall {
+                    map = format!("{}{},", map, "1");
+                } else {
+                    map = format!("{}{},", map, "0");
+                }
+            }
+            map = format!("{}\n", map);
+        }
+        log_fmt(map);
     }
 }
 
