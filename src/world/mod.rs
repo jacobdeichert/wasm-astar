@@ -272,6 +272,36 @@ impl WorldState {
     }
 }
 
+fn load_map(tile_size: u32, map: &str) -> Vec<Tile> {
+    let mut vec = Vec::new();
+    let rows: Vec<&str> = map.split_terminator("\n").collect();
+
+    for (y, row) in rows.iter().enumerate() {
+        let cols: Vec<&str> = row.split_terminator(",").collect();
+        let num_cols = cols.len();
+        for (x, col) in cols.iter().enumerate() {
+            let px = x as f64 * tile_size as f64;
+            let py = y as f64 * tile_size as f64;
+            let size = tile_size as f64;
+            let mut t: Tile = Tile::new(px, py, size);
+            t.x_id = x as i32;
+            t.y_id = y as i32;
+            t.node_id = (y * num_cols + x) as usize;
+            t.is_wall = {
+                if String::from(*col).eq("1") {
+                    true
+                } else {
+                    false
+                }
+            };
+            let lightness = if t.is_wall { 20 } else { 30 };
+            t.color = Color::new(0, 0, lightness, 1_f32);
+            vec.push(t);
+        }
+    }
+    vec
+}
+
 fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile> {
     let mut vec = Vec::new();
     let num_y_tiles = grid_height / tile_size;
@@ -293,9 +323,6 @@ fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile
                     false
                 }
             };
-            // Every other tile is true and rows are offset by one. This creates a checkerboard
-            // let checkerboard_tile_test = (x + y) % 2 == 0;
-            // let lightness = if checkerboard_tile_test { 30 } else { 20 };
             let lightness = if t.is_wall { 20 } else { 30 };
             t.color = Color::new(0, 0, lightness, 1_f32);
             vec.push(t);
