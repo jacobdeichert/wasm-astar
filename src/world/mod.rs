@@ -78,8 +78,6 @@ impl WorldState {
             t.reset(&end);
         }
 
-        let mut flip_side_check_counter = 0;
-
         // Stop searching when either:
         // 1) target is closed, in which case the path has been found
         // 2) failed to find the target and the open list is empty (no path)
@@ -101,28 +99,15 @@ impl WorldState {
                 self.tiles[current_node].left,
             ];
 
-            // Flip the check of left/right and top/bottom checks every few iterations
-            // so a zig zag pattern appears instead of producing L shaped paths.
-            if flip_side_check_counter % 4 == 0 {
-                // Check each side node.
-                // If the side exists (id >= 0)
-                // If it's a wall, it's not set as a side so we don't need to worry about it.
-                for s in side_ids.iter() {
-                    let id = *s as usize;
-                    if *s >= 0 && !closed_nodes.contains(&id) {
-                        self.check_node(&mut open_nodes, current_node, id);
-                    }
+            // Check each side node.
+            // If the side exists (id >= 0)
+            // If it's a wall, it's not set as a side so we don't need to worry about it.
+            for s in side_ids.iter() {
+                let id = *s as usize;
+                if *s >= 0 && !closed_nodes.contains(&id) {
+                    self.check_node(&mut open_nodes, current_node, id);
                 }
-            } else {
-                for s in side_ids.iter().rev() {
-                    let id = *s as usize;
-                    if *s >= 0 && !closed_nodes.contains(&id) {
-                        self.check_node(&mut open_nodes, current_node, id);
-                    }
-                }
-            };
-
-            flip_side_check_counter += 1;
+            }
         }
     }
 
