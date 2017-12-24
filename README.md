@@ -15,8 +15,9 @@ rustup toolchain install nightly
 # Add wasm as a target
 rustup target add wasm32-unknown-unknown --toolchain nightly
 
+# Install wasm-gc to shrink the output file (optional)
+cargo install --git https://github.com/alexcrichton/wasm-gc
+
 # Run the build script
 ./scripts/build.sh
 ~~~
-
-> Note: I haven't tried wasm-gc yet so the wasm file is not as small as it can be. The current output is around 90kb.
