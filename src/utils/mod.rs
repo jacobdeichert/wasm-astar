@@ -6,6 +6,9 @@ extern "C" {
     fn js_log(ptr: *const u8, len: u32);
 }
 
+// TODO: apparently the rand crate now works with wasm.
+// Switch to that!
+
 pub fn random_range(min: i32, max: i32) -> i32 {
     unsafe { js_random_range(min, max) }
 }
