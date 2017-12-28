@@ -25,7 +25,7 @@ At the bottom of this post, I have several questions that I would appreciate ans
 
 ### Very Little JS!
 
-It's been quite a while since I've coded raw js without webpack bundling or babel transpilation processes running in the background. My goal for making this demo was to keep the client-side non-wasm code as simple as possible. This means that you can go into the `dist/` directory and read the raw html, css, and js in only a few minutes. Not needing webpack or babel was so refreshing! Since only evergreen browsers can run wasm, I could use the latest js features without worrying about whether it would work in older browsers. With that said... if I started a project larger than a demo, or needed npm libraries (like threejs) I would most likely grab my webpack boilerplate project and be on my way.
+It's been quite a while since I've coded raw js without webpack bundling or babel transpilation processes running in the background. My goal for making this demo was to keep the client-side non-wasm code as simple as possible. This means that you can go into the `dist/` directory and read the raw html, css, and js in only a few minutes. Not needing webpack or babel was so refreshing! Since only evergreen browsers can run wasm, I could use the latest js features without worrying about whether it would work in older browsers. With that said... if I started a project larger than a demo or needed npm libraries (like threejs) I would most likely grab my webpack boilerplate project and be on my way.
 
 
 ### I Learned Some Rust!
@@ -40,7 +40,7 @@ After completing this demo, I can say that my next side project is definitely go
 
 After reading the source code of [rocket_wasm](https://github.com/aochagavia/rocket_wasm), it was really easy to pick up on how js and wasm communicate.
 
-And with great power comes great responsibility. The last thing you want to do is spread dozens of js calls all over your Rust code. I decided to go overly explicit and prepend all js function names with `js_`: `js_clear_screen`, `js_set_screen_size`, `js_request_tick`. This makes them really easy to grep in your Rust source. The next thing I did was to wrap most of those calls within Rust modules. One reason I did that is because every time you call a js function, you must wrap the call point in an `unsafe` block. By wrapping those into modules, it provides a safe interface on top of a minimal unsafe section of code. Check out the [`browser module`](https://github.com/jakedeichert/wasm-astar/blob/46b5dbb7d108fe1cb8fdb9cb77ec6c7d583fbca9/src/browser/mod.rs) for an example.
+And with great power comes great responsibility. The last thing you want to do is spread dozens of js calls all over your Rust code. I decided to go overly explicit and prepend all js function names with `js_`. For example: `js_clear_screen`, `js_set_screen_size`, `js_request_tick`. This makes them really easy to grep in your Rust source. The next thing I did was wrap most of those calls within Rust modules. One reason I did that is because every time you call a js function, you must wrap the call point in an `unsafe` block. By wrapping those into modules, it provides a safe interface on top of a minimal unsafe section of code. Check out the [browser module](https://github.com/jakedeichert/wasm-astar/blob/46b5dbb7d108fe1cb8fdb9cb77ec6c7d583fbca9/src/browser/mod.rs) for an example.
 
 
 
@@ -49,7 +49,7 @@ And with great power comes great responsibility. The last thing you want to do i
 
 ### Where to Store Game State
 
-Since I am pretty new to Rust, I wasn't exactly sure how or where to store global game state. Global scoped variables are not ideal of course, but for a small demo it shouldn't be a problem. One goal of mine was to keep as much logic as possible on the Rust side instead of in js land. I also didn't want to send the game state back and forth between js and Rust every tick since that seems like absolute overkill. With that said, it seemed like I must store the game state in a global Rust variable. After reading through the rocker_wasm source code, I copied their [global state pattern](https://github.com/aochagavia/rocket_wasm/blob/d0ca51beb9c7c351a1f0266206edfd553bf078d3/src/lib.rs#L23-L25).
+Since I am pretty new to Rust, I wasn't exactly sure how or where to store global game state. Global scoped variables are not ideal of course, but for a small demo it shouldn't be a problem. One goal of mine was to keep as much logic as possible on the Rust side instead of in js land. I also didn't want to send the game state back and forth between js and Rust every tick since that seems like absolute overkill. With that said, it seemed like I must store the game state in a global Rust variable. After reading through the `rocket_wasm` source code, I copied their [global state pattern](https://github.com/aochagavia/rocket_wasm/blob/d0ca51beb9c7c351a1f0266206edfd553bf078d3/src/lib.rs#L23-L25).
 
 ~~~rust
 lazy_static! {
