@@ -7,7 +7,7 @@ Check out the demo [here]()!
 ![demo gif](dist/demo.gif)
 
 
-# My Experience!
+## My Experience!
 
 
 The last time I tried learning Rust was a few years ago. I've been meaning to try it out again since then, and after hearing about Rust nightly getting the wasm32-unknown-unknown target, it seemed like a great time to do so.
@@ -21,14 +21,14 @@ At the bottom of this post, I have several questions that I would appreciate ans
 
 
 
-## The Good Parts
+### The Good Parts
 
-### Very Little JS!
+#### Very Little JS!
 
 It's been quite a while since I've coded raw js without webpack bundling or babel transpilation processes running in the background. My goal for making this demo was to keep the client-side non-wasm code as simple as possible. This means that you can go into the `dist/` directory and read the raw html, css, and js in only a few minutes. Not needing webpack or babel was so refreshing! Since only evergreen browsers can run wasm, I could use the latest js features without worrying about whether it would work in older browsers. With that said... if I started a project larger than a demo or needed npm libraries (like threejs) I would most likely grab my webpack boilerplate project and be on my way.
 
 
-### I Learned Some Rust!
+#### I Learned Some Rust!
 
 I find the best way to learn a language is to build something with it. I haven't even read the second edition of the book yet, but did skim a few pages as needed. The Rust docs are also extremely well done.
 
@@ -36,7 +36,7 @@ After completing this demo, I can say that my next side project is definitely go
 
 
 
-### Bridging JS and WebAssembly is Too Easy
+#### Bridging JS and WebAssembly is Too Easy
 
 After reading the source code of [rocket_wasm](https://github.com/aochagavia/rocket_wasm), it was really easy to pick up on how js and wasm communicate.
 
@@ -44,10 +44,10 @@ And with great power comes great responsibility. The last thing you want to do i
 
 
 
-## Growing Pains
+### Growing Pains
 
 
-### Where to Store Game State
+#### Where to Store Game State
 
 Since I am pretty new to Rust, I wasn't exactly sure how or where to store global game state. Global scoped variables are not ideal of course, but for a small demo it shouldn't be a problem. One goal of mine was to keep as much logic as possible on the Rust side instead of in js land. I also didn't want to send the game state back and forth between js and Rust every tick since that seems like absolute overkill. With that said, it seemed like I must store the game state in a global Rust variable. After reading through the `rocket_wasm` source code, I copied their [global state pattern](https://github.com/aochagavia/rocket_wasm/blob/d0ca51beb9c7c351a1f0266206edfd553bf078d3/src/lib.rs#L23-L25).
 
@@ -63,7 +63,7 @@ lazy_static! {
 However, this pattern ended up causing a few issues for me that I had to overcome...
 
 
-### Mutex Unlocking
+#### Mutex Unlocking
 
 With the game state stored as a mutex, I need to lock it each time I want to use it.
 
@@ -96,7 +96,7 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
 
 
 
-### Mutex Unlocking Part 2
+#### Mutex Unlocking Part 2
 
 So this one was a little trickier to find at first. When the js side called my Rust `init()` function, if it's in debug mode I wanted to do a slow `setInterval` tick instead of the normal `requestAnimationFrame`. The Rust side kicks off `start_interval_tick()` on the js side. Since the tick is really slow, I didn't have an initial render shown for x amount of seconds. So to get that initial render, I decided to do an immediate tick by calling the Rust `tick()` function.
 
@@ -131,7 +131,7 @@ js_start_interval_tick(ms) {
 
 
 
-### Sending Text to JS Land
+#### Sending Text to JS Land
 
 JS and WASM can only send ints and floats back and forth right now, no strings yet. However, sending strings was easier than I thought it would be. I stumbled across this post [Getting started with Rust/WebAssembly](https://maffydub.wordpress.com/2017/12/02/getting-started-with-rust-webassembly/) which describes how to decode the text from the WASM module's memory buffer when given a pointer and a length.
 
@@ -148,7 +148,7 @@ const wasmReadStrFromMemory = (ptr, length) => {
 ~~~
 
 
-### Compile Times Got Slower
+#### Compile Times Got Slower
 
 I think when I started out, compile times were around 2s for me. After a few days of working on this, it now takes around 4s to compile.
 
