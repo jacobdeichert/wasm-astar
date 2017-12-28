@@ -2,7 +2,7 @@
 
 This is a port of an A* implementation of mine from an old Unity maze project.
 
-Check out the demo [here]()!
+Check out the demo [here](https://jakedeichert.github.io/wasm-astar/)!
 
 ![demo gif](dist/demo.gif)
 
@@ -175,4 +175,8 @@ cargo install --git https://github.com/alexcrichton/wasm-gc
 
 # Run the build script
 ./scripts/build.sh
+
+# Then, serve the `dist/` directory
+# If you have node installed, you can run the `serve` package directly with npx:
+npx serve dist
 ~~~
