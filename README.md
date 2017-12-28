@@ -17,7 +17,7 @@ But first, I had to decide what to write! A recent blog post ([Rocket - A Rust g
 
 Now that it's complete, I'll go over some of the interesting parts from my learning process...
 
-At the bottom of this post, I have several questions that I would appreciate answers to!
+> At the bottom of this post, I have several questions that I would appreciate answers to!
 
 
 
@@ -40,7 +40,7 @@ After completing this demo, I can say that my next side project is definitely go
 
 After reading the source code of [rocket_wasm](https://github.com/aochagavia/rocket_wasm), it was really easy to pick up on how js and wasm communicate.
 
-And with great power comes great responsibility. The last thing you want to do is spread dozens of js calls all over your Rust code. I decided to go overly explicit and prepend all js function names with `js_`. For example: `js_clear_screen`, `js_set_screen_size`, `js_request_tick`. This makes them really easy to grep in your Rust source. The next thing I did was wrap most of those calls within Rust modules. One reason I did that is because every time you call a js function, you must wrap the call point in an `unsafe` block. By wrapping those into modules, it provides a safe interface on top of a minimal unsafe section of code. Check out the [browser module](https://github.com/jakedeichert/wasm-astar/blob/46b5dbb7d108fe1cb8fdb9cb77ec6c7d583fbca9/src/browser/mod.rs) for an example.
+And with great power comes great responsibility. The last thing you want to do is spread dozens of js calls all over your Rust code. I decided to go overly explicit and prepend all js function names with `js_`. For example: `js_clear_screen`, `js_set_screen_size`, `js_request_tick`. This makes them really easy to grep in your Rust source. The next thing I did was wrap most of those calls within Rust modules. One reason I did that is because every time you call a js function, you must wrap the call point in an `unsafe` block. By wrapping those into modules, it provides a safe interface to that small chunk of unsafe code. Check out the [browser module](https://github.com/jakedeichert/wasm-astar/blob/46b5dbb7d108fe1cb8fdb9cb77ec6c7d583fbca9/src/browser/mod.rs) for an example.
 
 
 
@@ -140,7 +140,6 @@ I haven't ran any performance tests on this solution yet, so keep in mind that s
 Also, I don't yet know how to send strings from js to Rust but so far I have not had to. An obvious reason would be user input.
 
 ~~~js
-// QUESTION: are there any issues with this method? Alternative/faster solutions?
 const wasmReadStrFromMemory = (ptr, length) => {
   const buf = new Uint8Array(WASM_ASTAR.wasmModule.memory.buffer, ptr, length);
   return new TextDecoder('utf8').decode(buf);
@@ -154,6 +153,24 @@ I think when I started out, compile times were around 2s for me. After a few day
 
 Perhaps I'm missing incremental compilation or something? Let me know if this sounds abnormal... I haven't written a non-wasm Rust program yet so nothing to compare against.
 
+
+
+
+
+
+
+
+## Questions
+
+If you have answers for me, open an issue for discussion!
+
+**Q:** Is there a better way to store global state?
+
+**Q:** Is there a better or faster way to send text from Rust to js?
+
+> Another solution is to store a dictionary map on the js side and just send ids back and forth. That's better for static text, but dynamic text would still need to be sent across and decoded.
+
+**Q:** How do you send text from js to Rust?
 
 
 
