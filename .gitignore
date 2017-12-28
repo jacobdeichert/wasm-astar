@@ -16,7 +16,8 @@ $RECYCLE.BIN/
 #######################################
 # wasm
 #######################################
-*.wasm
+# disabled so we can deploy to github pages
+# *.wasm
 
 #######################################
 # rust/cargo
