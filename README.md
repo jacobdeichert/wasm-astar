@@ -7,7 +7,7 @@ Check out the demo [here]()!
 ![demo gif](dist/demo.gif)
 
 
-# How It's Made
+# My Experience!
 
 
 The last time I tried learning Rust was a few years ago. I've been meaning to try it out again since then, and after hearing about Rust nightly getting the wasm32-unknown-unknown target, it seemed like a great time to do so.
@@ -23,7 +23,7 @@ At the bottom of this post, I have several questions that I would appreciate ans
 ## Issues I Ran Into
 
 
-### Where to store game state
+### Where to Store Game State
 
 Since I am pretty new to Rust, I wasn't exactly sure how or where to store global game state. Global scoped variables are not ideal of course, but for a small demo it shouldn't be a problem. One goal of mine was to keep as much logic as possible on the Rust side instead of in js land. I also didn't want to send the game state back and forth between js and Rust every tick since that seems like absolute overkill. With that said, it seemed like I must store the game state in a global Rust variable. After reading through the rocker_wasm source code, I copied their [global state pattern](https://github.com/aochagavia/rocket_wasm/blob/d0ca51beb9c7c351a1f0266206edfd553bf078d3/src/lib.rs#L23-L25).
 
@@ -101,7 +101,38 @@ js_start_interval_tick(ms) {
 },
 ~~~
 
+> [view src ](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/dist/main.js#L59-L71)
+
 > After writing this post, I now have realized I could instead remove this immediate tick and do it on the Rust side.
+
+
+
+
+### Sending Text to JS Land
+
+JS and WASM can only send ints and floats back and forth right now, no strings yet. However, sending strings was easier than I thought it would be. I stumbled across this post [Getting started with Rust/WebAssembly](https://maffydub.wordpress.com/2017/12/02/getting-started-with-rust-webassembly/) which describes how to decode the text from the WASM module's memory buffer when given a pointer and a length.
+
+I haven't ran any performance tests on this solution yet, so keep in mind that sending text to js draw calls every frame could slow down rendering a bit, though it might not be much. If anyone has done performance tests on this, let me know!
+
+Also, I don't yet know how to send strings from js to Rust but so far I have not had to. An obvious reason would be user input.
+
+~~~js
+// QUESTION: are there any issues with this method? Alternative/faster solutions?
+const wasmReadStrFromMemory = (ptr, length) => {
+  const buf = new Uint8Array(WASM_ASTAR.wasmModule.memory.buffer, ptr, length);
+  return new TextDecoder('utf8').decode(buf);
+};
+~~~
+
+
+### Compile Times Got Slower
+
+I think when I started out, compile times were around 2s for me. After a few days of working on this, it now takes around 4s to compile.
+
+Perhaps I'm missing incremental compilation or something? Let me know if this sounds abnormal... I haven't written a non-wasm Rust program yet so nothing to compare against.
+
+
+
 
 
 
