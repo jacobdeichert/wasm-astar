@@ -20,7 +20,31 @@ Now that it's complete, I'll go over some of the interesting parts from my learn
 At the bottom of this post, I have several questions that I would appreciate answers to!
 
 
-## Issues I Ran Into
+
+## The Good Parts
+
+### Very Little JS!
+
+It's been quite a while since I've coded raw js without webpack bundling or babel transpilation processes running in the background. My goal for making this demo was to keep the client-side non-wasm code as simple as possible. This means that you can go into the `dist/` directory and read the raw html, css, and js in only a few minutes. Not needing webpack or babel was so refreshing! Since only evergreen browsers can run wasm, I could use the latest js features without worrying about whether it would work in older browsers. With that said... if I started a project larger than a demo, or needed npm libraries (like threejs) I would most likely grab my webpack boilerplate project and be on my way.
+
+
+### I Learned Some Rust!
+
+I find the best way to learn a language is to build something with it. I haven't even read the second edition of the book yet, but did skim a few pages as needed. The Rust docs are also extremely well done.
+
+After completing this demo, I can say that my next side project is definitely going to incorporate some Rust. I am loving this language!
+
+
+
+### Bridging JS and WebAssembly is Too Easy
+
+After reading the source code of [rocket_wasm](https://github.com/aochagavia/rocket_wasm), it was really easy to pick up on how js and wasm communicate.
+
+And with great power comes great responsibility. The last thing you want to do is spread dozens of js calls all over your Rust code. I decided to go overly explicit and prepend all js function names with `js_`: `js_clear_screen`, `js_set_screen_size`, `js_request_tick`. This makes them really easy to grep in your Rust source. The next thing I did was to wrap most of those calls within Rust modules. One reason I did that is because every time you call a js function, you must wrap the call point in an `unsafe` block. By wrapping those into modules, it provides a safe interface on top of a minimal unsafe section of code. Check out the [`browser module`](https://github.com/jakedeichert/wasm-astar/blob/46b5dbb7d108fe1cb8fdb9cb77ec6c7d583fbca9/src/browser/mod.rs) for an example.
+
+
+
+## Growing Pains
 
 
 ### Where to Store Game State
@@ -59,7 +83,6 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
     // Requires block curlies so lifetime of world ends which causes unlock
     // and allows initial_draw() to gain control of the lock.
     // Otherwise, this generic client error occurs: "RuntimeError: unreachable executed"
-    // QUESTION: is there a better way to do this?
     {
         let world = &mut WORLD_STATE.lock().unwrap();
         world.debug = if debug == 1 { true } else { false };
