@@ -16,6 +16,7 @@ But first, I had to decide what to write! A recent blog post ([Rocket - A Rust g
 Now that it's complete, I'll go over some of the interesting parts from my experience so far. Also, at the bottom of this post I have a few questions that I would appreciate answers to!
 
 
+
 ### The Good Parts
 
 Here's a few things that I really liked about this experience.
@@ -24,14 +25,13 @@ Here's a few things that I really liked about this experience.
 
 It's been quite a while since I've coded raw js without webpack bundling or babel transpilation processes running in the background. My goal for making this demo was to keep the client-side non-wasm code as simple as possible. This means that you can go into the `dist/` directory and read the raw html, css, and js in only a few minutes. Not needing webpack or babel was so refreshing! Since only evergreen browsers can run wasm, I could use the latest js features without worrying about whether it would work in older browsers. With that said... if I started a project larger than a demo or needed npm libraries (like threejs) I would most likely grab my webpack boilerplate project and be on my way.
 
+Another goal of mine was to keep as much logic as possible on the wasm side. The js file is very minimal and contains mostly canvas api and rendering functions for Rust to bridge to. Take a [look](https://github.com/jakedeichert/wasm-astar/blob/5089f7ec663938c7bdeb178c357e111621ce3551/dist/main.js) for yourself!
 
 #### I Learned Some Rust!
 
 I find the best way to learn a language is to build something with it. I haven't even read the second edition of the book yet, but did skim a few pages as needed. The Rust docs are also extremely well done.
 
 After completing this demo, I can say that my next side project is definitely going to incorporate some Rust. I am loving this language!
-
-
 
 #### Bridging JS and WebAssembly is Too Easy
 
@@ -59,7 +59,6 @@ lazy_static! {
 > [view src](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/src/lib.rs#L44-L47)
 
 However, this pattern ended up causing a few issues for me that I had to overcome...
-
 
 #### Mutex Unlocking
 
@@ -92,8 +91,6 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
 
 > [view src](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/src/lib.rs#L56-L77)
 
-
-
 #### Mutex Unlocking Part 2
 
 So this one was a little trickier to find at first. When the js side called my Rust `init()` function, if it's in debug mode I wanted to do a slow `setInterval` tick instead of the normal `requestAnimationFrame`. The Rust side kicks off `start_interval_tick()` on the js side. Since the tick is really slow, I didn't have an initial render shown for x amount of seconds. So to get that initial render, I decided to do an immediate tick by calling the Rust `tick()` function.
@@ -102,7 +99,7 @@ Then, this wonderful error again:
 
 > "RuntimeError: unreachable executed"
 
-After some fiddly debugging, I realized what was going on. Rust called into js (`start_interval_tick`) and js called back into Rust (`tick()`) all within the same call stack started from the Rust `init()` function. Since both `init()` and `tick()` code paths access `WORLD_STATE`, `init()` still owned the lock and `tick()` crashed because of that. After I understood that it was due to sharing the same call stack, that meant that `init()` was never finishing and therefor its `WORLD_STATE` reference never unlocked. I simply fixed it by doing an immediate `setTimeout` (0ms) to push that initial `tick()` call onto the end of the js event queue thus having its own call stack.
+After some fiddly debugging, I realized what was going on. Rust called into js (`start_interval_tick()`) and js called back into Rust (`tick()`) all within the same call stack started from the Rust `init()` function. Since both `init()` and `tick()` code paths access `WORLD_STATE`, `init()` still owned the lock and `tick()` crashed because of that. After I understood that it was due to sharing the same call stack, that meant that `init()` was never finishing and therefor its `WORLD_STATE` reference never unlocked. I simply fixed it by doing an immediate `setTimeout` (0ms) to push that initial `tick()` call onto the end of the js event queue thus having its own call stack.
 
 
 Here's the fixed version.
@@ -122,16 +119,13 @@ js_start_interval_tick(ms) {
 },
 ~~~
 
-> [view src ](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/dist/main.js#L59-L71)
+> [view src](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/dist/main.js#L59-L71)
 
 > After writing this post, I now have realized I could instead remove this immediate tick and do it on the Rust side.
 
-
-
-
 #### Sending Text to JS Land
 
-JS and WASM can only send ints and floats back and forth right now, no strings yet. However, sending strings was easier than I thought it would be. I stumbled across this post [Getting started with Rust/WebAssembly](https://maffydub.wordpress.com/2017/12/02/getting-started-with-rust-webassembly/) which describes how to decode the text from the WASM module's memory buffer when given a pointer and a length.
+JS and wasm can only send ints and floats back and forth right now, no strings yet. However, sending strings was easier than I thought it would be. I stumbled across this post [Getting started with Rust/WebAssembly](https://maffydub.wordpress.com/2017/12/02/getting-started-with-rust-webassembly/) which describes how to decode the text from the wasm module's memory buffer when given a pointer and a length.
 
 I haven't ran any performance tests on this solution yet, so keep in mind that sending text to js draw calls every frame could slow down rendering a bit, though it might not be much. If anyone has done performance tests on this, let me know!
 
@@ -144,6 +138,7 @@ const wasmReadStrFromMemory = (ptr, length) => {
 };
 ~~~
 
+> [view src](https://github.com/jakedeichert/wasm-astar/blob/5089f7ec663938c7bdeb178c357e111621ce3551/dist/main.js#L156-L162)
 
 #### Compile Times Got Slower
 
@@ -160,7 +155,7 @@ Perhaps I'm missing incremental compilation or something? Let me know if this so
 
 ## Questions
 
-If you have answers for me, open an issue for discussion!
+If you have answers for me, comment on the issues linked below!
 
 **Q:** Is there a better way to store global state?
 [Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/3)
