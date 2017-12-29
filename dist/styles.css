@@ -33,6 +33,10 @@ h1 {
   margin: 0 auto;
 }
 
+#layer_wrapper {
+  margin: 0 auto;
+}
+
 #layer_wrapper canvas {
   display: block;
   position: absolute;
@@ -45,6 +49,13 @@ h1 {
   margin: 10px 0 0;
   opacity: 0.5;
   width: 100%;
+}
+
+@media (max-width: 600px) {
+  #info {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 #info:hover {

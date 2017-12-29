@@ -54,7 +54,7 @@ enum Layer {
 }
 
 #[no_mangle]
-pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
+pub extern "C" fn init(debug: i32, render_interval_ms: i32, window_width: u32, window_height: u32) {
     utils::log("Initializing Rust/WASM");
     // Requires block curlies so lifetime of world ends which causes unlock
     // and allows initial_draw() to gain control of the lock.
@@ -65,6 +65,8 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
     browser::create_layer("Fps", Layer::Fps as i32);
     {
         let world = &mut WORLD_STATE.lock().unwrap();
+        world.window_width = window_width;
+        world.window_height = window_height;
         world.debug = if debug == 1 { true } else { false };
         utils::log_fmt(format!("Debug Mode: {}", world.debug));
         if world.debug {
@@ -147,6 +149,11 @@ fn handle_input() {
 
 fn initial_draw() {
     let world = &mut WORLD_STATE.lock().unwrap();
+    if world.window_width < 600 {
+        world.width = 350 * world.quality;
+        world.height = 450 * world.quality;
+        world.reset();
+    }
     browser::set_screen_size(world.width, world.height, world.quality);
     browser::set_layer_size(
         Layer::TileBg as i32,

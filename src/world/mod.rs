@@ -8,6 +8,8 @@ pub use self::tile::Tile;
 
 pub struct WorldState {
     pub debug: bool,
+    pub window_width: u32,
+    pub window_height: u32,
     pub width: u32,
     pub height: u32,
     pub quality: u32,
@@ -28,6 +30,8 @@ impl WorldState {
 
         let mut w = WorldState {
             debug: false,
+            window_width: 0,
+            window_height: 0,
             width,
             height,
             quality,

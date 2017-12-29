@@ -13,7 +13,12 @@ const init = () => {
   const { wasmModulePath, debug, renderIntervalMs } = WASM_ASTAR;
   return loadWasm(wasmModulePath, getWasmImports()).then(wasmModule => {
     WASM_ASTAR.wasmModule = wasmModule;
-    WASM_ASTAR.wasmModule.init(debug, renderIntervalMs);
+    WASM_ASTAR.wasmModule.init(
+      debug,
+      renderIntervalMs,
+      window.innerWidth,
+      window.innerHeight
+    );
     window.addEventListener('mousemove', e => {
       // Coordinates relative to the canvas layers. Top left is 0,0
       const x = e.pageX - WASM_ASTAR.layerWrapperEl.offsetLeft;
@@ -25,6 +30,14 @@ const init = () => {
     });
     window.addEventListener('keyup', e => {
       WASM_ASTAR.wasmModule.key_up(e.keyCode);
+    });
+    WASM_ASTAR.layerWrapperEl.addEventListener('touchend', e => {
+      // Soooooo hacky. Sorry. Last minute mobile support.. simulating a spacebar
+      // to cause map randomization.
+      WASM_ASTAR.wasmModule.key_down(32);
+      setTimeout(() => {
+        WASM_ASTAR.wasmModule.key_up(32);
+      }, 100);
     });
   });
 };
