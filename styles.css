@@ -19,7 +19,6 @@ h1 {
 
 #fullscreen {
   display: flex;
-  justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
@@ -27,6 +26,15 @@ h1 {
 #wrapper {
   display: flex;
   flex-direction: column;
+  /*
+  NOTE: if i used justify-content on #fullscreen instead, horizontal scrolling breaks.
+  Using `margin: 0 auto` works better here.
+  */
+  margin: 0 auto;
+}
+
+#layer_wrapper {
+  margin: 0 auto;
 }
 
 #layer_wrapper canvas {
@@ -41,6 +49,13 @@ h1 {
   margin: 10px 0 0;
   opacity: 0.5;
   width: 100%;
+}
+
+@media (max-width: 600px) {
+  #info {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 #info:hover {
