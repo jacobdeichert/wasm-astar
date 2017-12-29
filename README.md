@@ -7,21 +7,18 @@ Check out the demo [here](https://jakedeichert.github.io/wasm-astar/)!
 ![demo gif](dist/demo.gif)
 
 
-## My Experience!
-
+## My Experience with WebAssembly and Rust So Far
 
 The last time I tried learning Rust was a few years ago. I've been meaning to try it out again since then, and after hearing about Rust nightly getting the wasm32-unknown-unknown target, it seemed like a great time to do so.
 
 But first, I had to decide what to write! A recent blog post ([Rocket - A Rust game running on WASM](https://aochagavia.github.io/blog/rocket---a-rust-game-running-on-wasm/)) really got me motivated to do something game dev related. I haven't used the canvas api in years, but I've been itching to do something with it once again. I figured that porting a piece of an old Unity project might be a good start, so I decided to go with an A* implementation I wrote for a maze demo.
 
-
-Now that it's complete, I'll go over some of the interesting parts from my learning process...
-
-> At the bottom of this post, I have several questions that I would appreciate answers to!
-
+Now that it's complete, I'll go over some of the interesting parts from my experience so far. Also, at the bottom of this post I have a few questions that I would appreciate answers to!
 
 
 ### The Good Parts
+
+Here's a few things that I really liked about this experience.
 
 #### Very Little JS!
 
@@ -46,6 +43,7 @@ And with great power comes great responsibility. The last thing you want to do i
 
 ### Growing Pains
 
+Here's a few issues I ran into and the workarounds I applied.
 
 #### Where to Store Game State
 
@@ -165,12 +163,15 @@ Perhaps I'm missing incremental compilation or something? Let me know if this so
 If you have answers for me, open an issue for discussion!
 
 **Q:** Is there a better way to store global state?
+[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/3)
 
 **Q:** Is there a better or faster way to send text from Rust to js?
+[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/2)
 
 > Another solution is to store a dictionary map on the js side and just send ids back and forth. That's better for static text, but dynamic text would still need to be sent across and decoded.
 
 **Q:** How do you send text from js to Rust?
+[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/1)
 
 
 
