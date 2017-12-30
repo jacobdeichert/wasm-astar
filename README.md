@@ -169,6 +169,9 @@ And I want to start writing more about Rust and WebAssembly! If you enjoyed read
 
 If you have answers for me, comment on the issues linked below!
 
+**Q** (new): Large wasm file sizes, potential causes, and how to avoid them?
+[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/5)
+
 **Q:** Is there a better way to store global state?
 [Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/3)
 
