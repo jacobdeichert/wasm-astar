@@ -1,8 +1,5 @@
-#[macro_use]
-extern crate lazy_static;
-
-use std::sync::Mutex;
 use std::os::raw::{c_double, c_float, c_int};
+use std::cell::RefCell;
 
 mod engine;
 mod browser;
@@ -38,12 +35,11 @@ extern "C" {
     );
 }
 
-// Learned about this pattern from rocket_wasm on github
-// https://github.com/aochagavia/rocket_wasm/blob/d0ca51beb9c7c351a1f0266206edfd553bf078d3/src/lib.rs
-// QUESTION: is there a better way/place to store state???
-lazy_static! {
-    static ref WORLD_STATE: Mutex<WorldState> = Mutex::new(WorldState::new());
-    static ref ENGINE_STATE: Mutex<EngineState> = Mutex::new(EngineState::new());
+// Switched to a better state pattern that doesn't require lazy_static
+// See https://github.com/jakedeichert/wasm-astar/issues/3
+thread_local! {
+    static WORLD_STATE: RefCell<WorldState> = RefCell::new(WorldState::new());
+    static ENGINE_STATE: RefCell<EngineState> = RefCell::new(EngineState::new());
 }
 
 // Maps to WASM_ASTAR.layers on the client side
@@ -63,8 +59,9 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32, window_width: u32, w
     browser::create_layer("TileBg", Layer::TileBg as i32);
     browser::create_layer("Main", Layer::Main as i32);
     browser::create_layer("Fps", Layer::Fps as i32);
-    {
-        let world = &mut WORLD_STATE.lock().unwrap();
+
+    WORLD_STATE.with(|world_state_cell| {
+        let world = &mut world_state_cell.borrow_mut();
         world.window_width = window_width;
         world.window_height = window_height;
         world.debug = if debug == 1 { true } else { false };
@@ -74,53 +71,68 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32, window_width: u32, w
         } else {
             browser::request_next_tick();
         }
-    }
-    initial_draw();
+        initial_draw(world);
+    });
 }
 
 #[no_mangle]
 pub extern "C" fn tick(elapsed_time: f64) {
     browser::clear_screen(Layer::Main as i32);
-    update(elapsed_time);
-    draw(elapsed_time);
+
+    ENGINE_STATE.with(|engine_state_cell| {
+        let engine = &mut engine_state_cell.borrow_mut();
+        WORLD_STATE.with(|world_state_cell| {
+            let world = &mut world_state_cell.borrow_mut();
+            update(world, engine, elapsed_time);
+            draw(world, engine, elapsed_time);
+        });
+    });
+
     browser::request_next_tick();
 }
 
 #[no_mangle]
 pub extern "C" fn key_down(key_code: u32) {
-    let engine = &mut ENGINE_STATE.lock().unwrap();
-    engine.set_key_down(key_code);
+    ENGINE_STATE.with(|engine_state_cell| {
+        let engine = &mut engine_state_cell.borrow_mut();
+        engine.set_key_down(key_code);
+    });
 }
 
 #[no_mangle]
 pub extern "C" fn key_up(key_code: u32) {
-    let engine = &mut ENGINE_STATE.lock().unwrap();
-    engine.set_key_up(key_code);
+    ENGINE_STATE.with(|engine_state_cell| {
+        let engine = &mut engine_state_cell.borrow_mut();
+        engine.set_key_up(key_code);
+    });
 }
 
 #[no_mangle]
 pub extern "C" fn mouse_move(x: i32, y: i32) {
-    let engine = &mut ENGINE_STATE.lock().unwrap();
-    let world = &mut WORLD_STATE.lock().unwrap();
-    engine.mouse_move(x, y);
-    world.set_player_pos(x as f64, y as f64);
+    ENGINE_STATE.with(|engine_state_cell| {
+        let engine = &mut engine_state_cell.borrow_mut();
+        engine.mouse_move(x, y);
+    });
+
+    WORLD_STATE.with(|world_state_cell| {
+        let world = &mut world_state_cell.borrow_mut();
+        world.set_player_pos(x as f64, y as f64);
+    });
 }
 
-fn update(elapsed_time: f64) {
-    handle_input();
-    let engine = &mut ENGINE_STATE.lock().unwrap();
+fn update(world: &mut WorldState, engine: &mut EngineState, elapsed_time: f64) {
+    handle_input(world, engine);
+
     engine.update(elapsed_time);
-    let world = &mut WORLD_STATE.lock().unwrap();
     world.set_start_node();
     world.calc_astar();
+
     unsafe {
         js_update();
     }
 }
 
-fn handle_input() {
-    let world = &mut WORLD_STATE.lock().unwrap();
-    let engine = &mut ENGINE_STATE.lock().unwrap();
+fn handle_input(world: &mut WorldState, engine: &mut EngineState) {
     if !engine.was_key_down(engine::KeyCode::Spacebar)
         && engine.is_key_down(engine::KeyCode::Spacebar) && !world.recent_regen
     {
@@ -147,8 +159,7 @@ fn handle_input() {
     world.update_player(x_dir, y_dir);
 }
 
-fn initial_draw() {
-    let world = &mut WORLD_STATE.lock().unwrap();
+fn initial_draw(world: &mut WorldState) {
     if world.window_width < 600 {
         world.width = 350 * world.quality;
         world.height = 450 * world.quality;
@@ -166,8 +177,7 @@ fn initial_draw() {
     draw_background(world);
 }
 
-fn draw(elapsed_time: f64) {
-    let world = &mut WORLD_STATE.lock().unwrap();
+fn draw(world: &mut WorldState, engine: &mut EngineState, elapsed_time: f64) {
     if world.recent_regen {
         draw_background(world);
     }
@@ -185,7 +195,7 @@ fn draw(elapsed_time: f64) {
     let path_count = get_path_count(world, &world.tiles[world.end_id as usize], 0);
     draw_path_count(path_count);
     // draw_player(world);
-    draw_fps(elapsed_time);
+    draw_fps(engine, elapsed_time);
 }
 
 fn draw_background(world: &WorldState) {
@@ -262,8 +272,7 @@ fn draw_path_count(path_count: i32) {
     }
 }
 
-fn draw_fps(elapsed_time: f64) {
-    let engine = &mut ENGINE_STATE.lock().unwrap();
+fn draw_fps(engine: &mut EngineState, elapsed_time: f64) {
     let fps = engine.fps;
     engine.render_fps(elapsed_time, 150, || {
         browser::clear_screen(Layer::Fps as i32);
