@@ -3,6 +3,10 @@ name = "wasm-astar"
 version = "0.1.0"
 authors = ["Jake Deichert <git@jakedeichert.com>"]
 
+[profile.release]
+lto = true
+opt-level = 's'
+
 [lib]
 path = "src/lib.rs"
 crate-type = ["cdylib"]
