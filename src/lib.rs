@@ -1,15 +1,15 @@
 #[macro_use]
 extern crate lazy_static;
 
-use std::sync::Mutex;
 use std::os::raw::{c_double, c_float, c_int};
+use std::sync::Mutex;
 
-mod engine;
 mod browser;
+mod engine;
 mod utils;
 mod world;
-use world::{Tile, WorldState};
 use engine::EngineState;
+use world::{Tile, WorldState};
 
 // Imported js functions. Note, some are used in other modules (browser, utils).
 extern "C" {
@@ -122,7 +122,8 @@ fn handle_input() {
     let world = &mut WORLD_STATE.lock().unwrap();
     let engine = &mut ENGINE_STATE.lock().unwrap();
     if !engine.was_key_down(engine::KeyCode::Spacebar)
-        && engine.is_key_down(engine::KeyCode::Spacebar) && !world.recent_regen
+        && engine.is_key_down(engine::KeyCode::Spacebar)
+        && !world.recent_regen
     {
         world.reset();
         browser::clear_screen(Layer::Main as i32);
@@ -201,7 +202,7 @@ fn draw_path(world: &WorldState, t: &Tile) {
             Layer::Main as i32,
             t.transform.pos_x + half_tile,
             t.transform.pos_y + half_tile,
-            (t.transform.scale_x / 5_f64),
+            t.transform.scale_x / 5_f64,
             280,
             100,
             73,

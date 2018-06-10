@@ -64,10 +64,9 @@ impl WorldState {
 
     pub fn set_start_node(&mut self) {
         let half_tile = (self.tile_size / 2) as f64;
-        self.start_id = self.get_tile_id_closest_to(
-            self.player.pos_x - half_tile,
-            self.player.pos_y - half_tile,
-        ) as i32;
+        self.start_id = self
+            .get_tile_id_closest_to(self.player.pos_x - half_tile, self.player.pos_y - half_tile)
+            as i32;
     }
 
     pub fn calc_astar(&mut self) {
