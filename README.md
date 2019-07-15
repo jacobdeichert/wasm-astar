@@ -161,7 +161,7 @@ Here are a few ideas I might start working on next:
 * try out [yew](https://github.com/DenisKolodin/yew) (React-like framework for Rust)
 * distant future: write an emulator of some sort? I've heard an NES emulator might be a good starter
 
-And I want to start writing more about Rust and WebAssembly! If you enjoyed reading my thoughts above, follow me on [Twitter](https://twitter.com/jakedeichert), my [rss feed](https://jakedeichert.com/feed.xml), or on [Medium](https://medium.com/@jakedeichert).
+And I want to start writing more about Rust and WebAssembly! If you enjoyed reading my thoughts above, follow me on [Twitter](https://twitter.com/jakedeichert) or my [website's](https://jakedeichert.com) [rss feed](https://jakedeichert.com/feed.xml).
 
 
 
