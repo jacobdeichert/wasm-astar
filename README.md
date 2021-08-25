@@ -148,20 +148,7 @@ Perhaps I'm missing incremental compilation or something? Let me know if this so
 
 
 
-## What's Next for Me?
 
-Building this demo made me really excited for the future of WebAssembly and Rust. Now I need to choose my next project to build!
-
-Here are a few ideas I might start working on next:
-* voxel space renderer (inspired by [s-macke/VoxelSpace](https://github.com/s-macke/VoxelSpace))
-* hook up Rust to threejs, make a maze demo
-* port my procedural island terrain generator
-* very, very small websocket multiplayer game
-* port my [c++ opengl game engine](https://github.com/jakedeichert/lynx) to webgl
-* try out [yew](https://github.com/DenisKolodin/yew) (React-like framework for Rust)
-* distant future: write an emulator of some sort? I've heard an NES emulator might be a good starter
-
-And I want to start writing more about Rust and WebAssembly! If you enjoyed reading my thoughts above, follow me on [Twitter](https://twitter.com/jakedeichert) or my [website's](https://jakedeichert.com) [rss feed](https://jakedeichert.com/feed.xml).
 
 
 
