@@ -140,35 +140,9 @@ const wasmReadStrFromMemory = (ptr, length) => {
 
 > [view src](https://github.com/jakedeichert/wasm-astar/blob/5089f7ec663938c7bdeb178c357e111621ce3551/dist/main.js#L156-L162)
 
-#### Compile Times Got Slower
-
-I think when I started out, compile times were around 2s for me. After a few days of working on this, it now takes around 4s to compile.
-
-Perhaps I'm missing incremental compilation or something? Let me know if this sounds abnormal... I haven't written a non-wasm Rust program yet so nothing to compare against.
 
 
 
-
-
-
-
-## Questions
-
-If you have answers for me, comment on the issues linked below!
-
-**Q** (new): Large wasm file sizes, potential causes, and how to avoid them?
-[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/5)
-
-**Q:** Is there a better way to store global state?
-[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/3)
-
-**Q:** Is there a better or faster way to send text from Rust to js?
-[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/2)
-
-> Another solution is to store a dictionary map on the js side and just send ids back and forth. That's better for static text, but dynamic text would still need to be sent across and decoded.
-
-**Q:** How do you send text from js to Rust?
-[Issue for Discussion](https://github.com/jakedeichert/wasm-astar/issues/1)
 
 
 
