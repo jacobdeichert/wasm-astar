@@ -1,7 +1,7 @@
 [package]
 name = "wasm-astar"
 version = "0.1.0"
-authors = ["Jake Deichert <git@jakedeichert.com>"]
+authors = ["Jacob Deichert <git@jakedeichert.com>"]
 
 [profile.release]
 lto = true

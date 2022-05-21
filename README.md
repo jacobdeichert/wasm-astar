@@ -2,7 +2,7 @@
 
 This is a port of an A* implementation of mine from an old Unity maze project.
 
-Check out the demo [here](https://jakedeichert.github.io/wasm-astar/)!
+Check out the demo [here](https://jacobdeichert.github.io/wasm-astar/)!
 
 ![demo gif](dist/demo.gif)
 
@@ -25,7 +25,7 @@ Here's a few things that I really liked about this experience.
 
 It's been quite a while since I've coded raw js without webpack bundling or babel transpiler processes running in the background. My goal for making this demo was to keep the client-side non-wasm code as simple as possible. This means that you can go into the `dist/` directory and read the raw html, css, and js in only a few minutes. Not needing webpack or babel was so refreshing! Since only evergreen browsers can run wasm, I could use the latest js features without worrying about whether it would work in older browsers. With that said... if I started a project larger than a demo or needed npm libraries (like threejs) I would most likely grab my webpack boilerplate project and be on my way.
 
-Another goal of mine was to keep as much logic as possible on the wasm side. The js file is very minimal and contains mostly canvas api and rendering functions for Rust to bridge to. Take a [look](https://github.com/jakedeichert/wasm-astar/blob/5089f7ec663938c7bdeb178c357e111621ce3551/dist/main.js) for yourself!
+Another goal of mine was to keep as much logic as possible on the wasm side. The js file is very minimal and contains mostly canvas api and rendering functions for Rust to bridge to. Take a [look](https://github.com/jacobdeichert/wasm-astar/blob/5089f7ec663938c7bdeb178c357e111621ce3551/dist/main.js) for yourself!
 
 #### I Learned Some Rust!
 
@@ -37,7 +37,7 @@ After completing this demo, I can say that my next side project is definitely go
 
 After reading the source code of [rocket_wasm](https://github.com/aochagavia/rocket_wasm), it was really easy to pick up on how js and wasm communicate.
 
-And with great power comes great responsibility. The last thing you want to do is spread dozens of js calls all over your Rust code. I decided to go overly explicit and prepend all js function names with `js_`. For example: `js_clear_screen`, `js_set_screen_size`, `js_request_tick`. This makes them really easy to grep in your Rust source. The next thing I did was wrap most of those calls within Rust modules. One reason I did that is because every time you call a js function, you must wrap the call point in an `unsafe` block. By wrapping those into modules, it provides a safe interface to that small chunk of unsafe code. Check out the [browser module](https://github.com/jakedeichert/wasm-astar/blob/46b5dbb7d108fe1cb8fdb9cb77ec6c7d583fbca9/src/browser/mod.rs) for an example.
+And with great power comes great responsibility. The last thing you want to do is spread dozens of js calls all over your Rust code. I decided to go overly explicit and prepend all js function names with `js_`. For example: `js_clear_screen`, `js_set_screen_size`, `js_request_tick`. This makes them really easy to grep in your Rust source. The next thing I did was wrap most of those calls within Rust modules. One reason I did that is because every time you call a js function, you must wrap the call point in an `unsafe` block. By wrapping those into modules, it provides a safe interface to that small chunk of unsafe code. Check out the [browser module](https://github.com/jacobdeichert/wasm-astar/blob/46b5dbb7d108fe1cb8fdb9cb77ec6c7d583fbca9/src/browser/mod.rs) for an example.
 
 
 
@@ -56,7 +56,7 @@ lazy_static! {
 }
 ~~~
 
-> [view src](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/src/lib.rs#L44-L47)
+> [view src](https://github.com/jacobdeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/src/lib.rs#L44-L47)
 
 However, this pattern ended up causing a few issues for me that I had to overcome...
 
@@ -89,7 +89,7 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32) {
 }
 ~~~
 
-> [view src](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/src/lib.rs#L56-L77)
+> [view src](https://github.com/jacobdeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/src/lib.rs#L56-L77)
 
 #### Mutex Unlocking Part 2
 
@@ -119,7 +119,7 @@ js_start_interval_tick(ms) {
 },
 ~~~
 
-> [view src](https://github.com/jakedeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/dist/main.js#L59-L71)
+> [view src](https://github.com/jacobdeichert/wasm-astar/blob/cee849fa6ae54ba187e1a16556ce35ea1698b052/dist/main.js#L59-L71)
 
 > After writing this post, I now have realized I could instead remove this immediate tick and do it on the Rust side.
 
@@ -138,7 +138,7 @@ const wasmReadStrFromMemory = (ptr, length) => {
 };
 ~~~
 
-> [view src](https://github.com/jakedeichert/wasm-astar/blob/5089f7ec663938c7bdeb178c357e111621ce3551/dist/main.js#L156-L162)
+> [view src](https://github.com/jacobdeichert/wasm-astar/blob/5089f7ec663938c7bdeb178c357e111621ce3551/dist/main.js#L156-L162)
 
 
 
