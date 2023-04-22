@@ -9,21 +9,21 @@ extern "C" {
 // TODO: apparently the rand crate now works with wasm.
 // Switch to that!
 
-pub fn random_range(min: i32, max: i32) -> i32 {
+pub unsafe fn random_range(min: i32, max: i32) -> i32 {
     unsafe { js_random_range(min, max) }
 }
 
-pub fn random() -> f32 {
+pub unsafe fn random() -> f32 {
     unsafe { js_random() }
 }
 
-pub fn log(msg: &str) {
+pub unsafe fn log(msg: &str) {
     unsafe {
         js_log(msg.as_ptr(), msg.len() as u32);
     }
 }
 
-pub fn log_fmt(msg: String) {
+pub unsafe fn log_fmt(msg: String) {
     unsafe {
         js_log(msg.as_ptr(), msg.len() as u32);
     }

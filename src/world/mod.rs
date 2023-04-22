@@ -161,8 +161,8 @@ impl WorldState {
         let num_x_tiles = (self.width / self.tile_size) as i32;
         let num_y_tiles = (self.height / self.tile_size) as i32;
         let index = self.get_tile_id_at(
-            random_range(0, num_x_tiles - 1) as u32,
-            random_range(0, num_y_tiles - 1) as u32,
+            unsafe { random_range(0, num_x_tiles - 1) as u32 },
+            unsafe { random_range(0, num_y_tiles - 1) as u32 },
         );
         self.tiles[index].clone()
     }
@@ -184,8 +184,8 @@ impl WorldState {
         let num_x_tiles = (self.width / self.tile_size) as i32;
         let num_y_tiles = (self.height / self.tile_size) as i32;
         self.get_tile_id_at(
-            random_range(0, num_x_tiles - 1) as u32,
-            random_range(0, num_y_tiles - 1) as u32,
+            unsafe { random_range(0, num_x_tiles - 1) as u32 },
+            unsafe { random_range(0, num_y_tiles - 1) as u32 },
         )
     }
 
@@ -246,12 +246,12 @@ impl WorldState {
             }
             map = format!("{}\n", map);
         }
-        log_fmt(map);
+        unsafe { log_fmt(map) };
     }
 
     fn load_random_map(&mut self) {
         let tile_sizes = vec![10, 20, 50];
-        self.tile_size = tile_sizes[random_range(0, (tile_sizes.len() - 1) as i32) as usize];
+        self.tile_size = tile_sizes[unsafe { random_range(0, (tile_sizes.len() - 1) as i32) } as usize];
         self.tiles = generate_tiles(self.width, self.height, self.tile_size);
         self.set_all_tile_sides();
         self.set_target_tiles();
@@ -345,7 +345,7 @@ fn generate_tiles(grid_width: u32, grid_height: u32, tile_size: u32) -> Vec<Tile
             t.y_id = y as i32;
             t.node_id = (y * num_x_tiles + x) as usize;
             t.is_wall = {
-                if random() >= 0.7 {
+                if unsafe { random() } >= 0.7 {
                     true
                 } else {
                     false

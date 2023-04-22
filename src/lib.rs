@@ -55,24 +55,24 @@ enum Layer {
 
 #[no_mangle]
 pub extern "C" fn init(debug: i32, render_interval_ms: i32, window_width: u32, window_height: u32) {
-    utils::log("Initializing Rust/WASM");
+    unsafe { utils::log("Initializing Rust/WASM") };
     // Requires block curlies so lifetime of world ends which causes unlock
     // and allows initial_draw() to gain control of the lock.
     // Otherwise, this generic client error occurs: "RuntimeError: unreachable executed"
     // QUESTION: is there a better way to do this?
-    browser::create_layer("TileBg", Layer::TileBg as i32);
-    browser::create_layer("Main", Layer::Main as i32);
-    browser::create_layer("Fps", Layer::Fps as i32);
+    unsafe { browser::create_layer("TileBg", Layer::TileBg as i32) };
+    unsafe { browser::create_layer("Main", Layer::Main as i32) };
+    unsafe { browser::create_layer("Fps", Layer::Fps as i32) };
     {
         let world = &mut WORLD_STATE.lock().unwrap();
         world.window_width = window_width;
         world.window_height = window_height;
         world.debug = if debug == 1 { true } else { false };
-        utils::log_fmt(format!("Debug Mode: {}", world.debug));
+        unsafe { utils::log_fmt(format!("Debug Mode: {}", world.debug)) };
         if world.debug {
-            browser::start_interval_tick(render_interval_ms);
+            unsafe { browser::start_interval_tick(render_interval_ms) };
         } else {
-            browser::request_next_tick();
+            unsafe { browser::request_next_tick() };
         }
     }
     initial_draw();
@@ -80,10 +80,10 @@ pub extern "C" fn init(debug: i32, render_interval_ms: i32, window_width: u32, w
 
 #[no_mangle]
 pub extern "C" fn tick(elapsed_time: f64) {
-    browser::clear_screen(Layer::Main as i32);
+    unsafe { browser::clear_screen(Layer::Main as i32) };
     update(elapsed_time);
     draw(elapsed_time);
-    browser::request_next_tick();
+    unsafe { browser::request_next_tick() };
 }
 
 #[no_mangle]
@@ -126,7 +126,7 @@ fn handle_input() {
         && !world.recent_regen
     {
         world.reset();
-        browser::clear_screen(Layer::Main as i32);
+        unsafe { browser::clear_screen(Layer::Main as i32) };
         // Horrible check until i implement event callbacks for key presses
         world.recent_regen = true;
     } else if !engine.is_key_down(engine::KeyCode::Spacebar) {
@@ -155,15 +155,15 @@ fn initial_draw() {
         world.height = 450 * world.quality;
         world.reset();
     }
-    browser::set_screen_size(world.width, world.height, world.quality);
-    browser::set_layer_size(
+    unsafe { browser::set_screen_size(world.width, world.height, world.quality) };
+    unsafe { browser::set_layer_size(
         Layer::TileBg as i32,
         world.width,
         world.height,
         world.quality,
-    );
-    browser::set_layer_size(Layer::Main as i32, world.width, world.height, world.quality);
-    browser::set_layer_size(Layer::Fps as i32, 200, 70, world.quality);
+    ) };
+    unsafe { browser::set_layer_size(Layer::Main as i32, world.width, world.height, world.quality) };
+    unsafe { browser::set_layer_size(Layer::Fps as i32, 200, 70, world.quality) };
     draw_background(world);
 }
 
@@ -267,7 +267,7 @@ fn draw_fps(elapsed_time: f64) {
     let engine = &mut ENGINE_STATE.lock().unwrap();
     let fps = engine.fps;
     engine.render_fps(elapsed_time, 150, || {
-        browser::clear_screen(Layer::Fps as i32);
+        unsafe { browser::clear_screen(Layer::Fps as i32) };
         unsafe {
             js_draw_fps(Layer::Fps as i32, fps);
         }
